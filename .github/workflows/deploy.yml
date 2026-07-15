@@ -4,15 +4,17 @@ on:
   push:
     branches: [main]
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/frontend-landing
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
+      - name: Calcula nombre de imagen en minúsculas
+        id: image
+        run: |
+          echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/frontend-landing" >> "$GITHUB_ENV"
 
       - name: Login a GitHub Container Registry
         uses: docker/login-action@v3
