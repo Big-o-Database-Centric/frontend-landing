@@ -1,4 +1,3 @@
-# Guardar como: frontend-landing/.github/workflows/deploy.yml
 name: Deploy Frontend Landing
 
 on:
