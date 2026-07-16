@@ -21,11 +21,17 @@ document.querySelectorAll('.glass-panel').forEach(card => {
     });
 });
 
-// Navigation: route primary calls-to-action to the registration flow.
-document.querySelectorAll('[data-nav="register"]').forEach(el => {
-    el.addEventListener('click', () => { window.location.href = '/views/register.html'; });
-});
-
-document.querySelectorAll('[data-nav="login"]').forEach(el => {
-    el.addEventListener('click', () => { window.location.href = '/views/login.html'; });
+// Navigation: route primary calls-to-action to the registration/login flow.
+// Delegación de eventos + preventDefault para garantizar la navegación
+// aunque el script se cargue en cualquier orden.
+document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-nav]');
+    if (!target) return;
+    e.preventDefault();
+    const nav = target.getAttribute('data-nav');
+    if (nav === 'register') {
+        window.location.href = '/views/register.html';
+    } else if (nav === 'login') {
+        window.location.href = '/views/login.html';
+    }
 });
