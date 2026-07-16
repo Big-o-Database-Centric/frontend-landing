@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Cache de navegadores de Playwright (se descargan, no se versionan)
+.cache/
