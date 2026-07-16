@@ -26,6 +26,6 @@ document.addEventListener('mousemove', (e) => {
 const registerForm = document.querySelector('form');
 if (registerForm) {
     registerForm.addEventListener('submit', () => {
-        window.location.href = 'dashboard.html';
+        window.location.href = '/views/dashboard.html';
     });
 }

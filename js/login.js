@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Navigation: send the (mock) authenticated user to the dashboard.
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
+                window.location.href = '/views/dashboard.html';
             }, 600);
         }, 1500);
     });
