@@ -19,6 +19,6 @@ document.querySelectorAll('.glass').forEach(card => {
 // Navigation: logout returns to the login screen.
 document.querySelectorAll('[data-nav="logout"]').forEach(btn => {
     btn.addEventListener('click', () => {
-        window.location.href = 'login.html';
+        window.location.href = '/views/login.html';
     });
 });

@@ -23,9 +23,9 @@ document.querySelectorAll('.glass-panel').forEach(card => {
 
 // Navigation: route primary calls-to-action to the registration flow.
 document.querySelectorAll('[data-nav="register"]').forEach(el => {
-    el.addEventListener('click', () => { window.location.href = 'views/register.html'; });
+    el.addEventListener('click', () => { window.location.href = '/views/register.html'; });
 });
 
 document.querySelectorAll('[data-nav="login"]').forEach(el => {
-    el.addEventListener('click', () => { window.location.href = 'views/login.html'; });
+    el.addEventListener('click', () => { window.location.href = '/views/login.html'; });
 });
