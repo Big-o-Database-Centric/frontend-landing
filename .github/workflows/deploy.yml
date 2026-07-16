@@ -35,6 +35,12 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
+      - name: Diagnóstico de secrets
+        run: |
+          if [ -n "${{ secrets.VPS_HOST }}" ]; then echo "VPS_HOST: PRESENTE"; else echo "VPS_HOST: AUSENTE"; fi
+          if [ -n "${{ secrets.VPS_USER }}" ]; then echo "VPS_USER: PRESENTE"; else echo "VPS_USER: AUSENTE"; fi
+          if [ -n "${{ secrets.SSH_KEY }}" ]; then echo "SSH_KEY: PRESENTE"; else echo "SSH_KEY: AUSENTE"; fi
+
       - name: Deploy al VPS Big-o
         uses: appleboy/ssh-action@v1.0.3
         with:
