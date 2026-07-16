@@ -1,9 +1,3 @@
-/*
- * BIG O — landing.js
- * Behaviour extracted verbatim from the inline <script> at the bottom of
- * big_o_landing_page/code.html. Logic is unchanged.
- */
-
 // Micro-interaction: Navbar scroll effect
 window.addEventListener('scroll', () => {
     const nav = document.querySelector('nav');
