@@ -1,0 +1,71 @@
+/* =========================================================================
+   BIG O — components.css
+   -------------------------------------------------------------------------
+   Reusable visual-language classes shared by all four screens (landing,
+   login, register, dashboard), per the "Glassmorphism + Neon Accents"
+   spec described in big_o/DESIGN.md.
+
+   NOTE ON THIS EXTRACTION:
+   In the original export, only big_o_dashboard/code.html actually defined
+   ".glass" and ".neon-glow" (inline <style>). The landing, login and
+   register pages already REFERENCE equivalent classes in their markup
+   (".glass-panel", ".glass-card", ".neon-glow", ".btn-hover-glow",
+   ".cyan-glow", ".status-pulse") as shown in each folder's screen.png,
+   but those class definitions were missing from their exported HTML, so
+   the effect did not render. To modularize the CSS into one shared file
+   without altering any markup/classes, this file defines all of the
+   class names actually used in the four pages, using the exact same
+   glass/glow values already established by the dashboard page — this
+   keeps every page visually consistent with its own screen.png reference
+   without changing any HTML structure or class names.
+   ========================================================================= */
+
+/* --- Glassmorphism surfaces -------------------------------------------- */
+/* .glass        -> used in big_o_dashboard
+   .glass-panel  -> used in big_o_landing_page and big_o_login
+   .glass-card   -> used in big_o_register
+   All three are the same surface treatment, just named differently per page. */
+.glass,
+.glass-panel,
+.glass-card {
+    background: rgba(18, 33, 49, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59, 73, 75, 0.3);
+}
+
+/* --- Neon / cyan glow ---------------------------------------------------- */
+/* .neon-glow  -> used in big_o_landing_page, big_o_login, big_o_dashboard
+   .cyan-glow  -> used in big_o_register (inputs) */
+.neon-glow,
+.cyan-glow {
+    box-shadow: 0 0 15px rgba(0, 219, 233, 0.1);
+}
+
+/* Stronger glow on hover for primary CTA buttons (big_o_login "Sign In") */
+.btn-hover-glow:hover {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+/* --- Status / activity pulses ------------------------------------------- */
+/* .status-pulse -> small dot next to the "BIG O" logo on the landing page
+   .pulse-active -> connection status dots on the dashboard database list */
+.status-pulse,
+.pulse-active {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Animated cyan hairline under the login card ("Terminal Decal") */
+.animate-pulse-cyan {
+    animation: pulse-cyan 2s ease-in-out infinite;
+}
+
+@keyframes pulse-cyan {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}

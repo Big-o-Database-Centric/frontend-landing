@@ -1,0 +1,27 @@
+/* =========================================================================
+   BIG O — base.css
+   -------------------------------------------------------------------------
+   Base/reset layer shared by every page (index, login, register, dashboard).
+   This file only contains styles that are NOT expressible as Tailwind
+   utility classes (plain element defaults, font rendering tweaks, global
+   keyframes). Everything else stays as Tailwind utility classes in the
+   HTML, exactly as it was authored, so no visual change is introduced.
+
+   Originally this block only existed inline inside big_o_dashboard/code.html.
+   It has been extracted here so all four pages share the same base rules
+   instead of duplicating (or missing) them.
+   ========================================================================= */
+
+/* Global page defaults (color, font, scroll behaviour) */
+body {
+    background-color: #051424;
+    color: #d4e4fa;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Keep Material Symbols icons rendered as outlined glyphs everywhere
+   they are used (nav icons, form icons, dashboard sidebar icons, etc.) */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

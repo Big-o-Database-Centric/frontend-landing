@@ -1,0 +1,240 @@
+<!doctype html>
+<!--
+  BIG O — Registration page (register.html)
+  ---------------------------------------------------------------------
+  Structure:
+    <header> Minimal top bar: brand mark + Docs link only (nav suppressed
+             on transactional pages by design)
+    <main>   Centered glass card:
+               - Title / subtitle
+               - Name + email + password form (mock submit, js/register.js)
+               - OAuth (GitHub / Google) buttons (decorative, no backend)
+               - Link to login.html for existing users
+    <footer> Legal links + status strip
+  Shared styling lives in css/base.css and css/components.css.
+  Shared Tailwind design tokens live in js/tailwind-config.js.
+  Page-specific behaviour lives in js/register.js (on submit, redirects
+  to dashboard.html).
+  Linked pages: index.html, login.html, dashboard.html.
+-->
+<html lang="en" class="dark" style="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Geist:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@450&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+    <script src="../js/tailwind-config.js"></script>
+  </head>
+  <body
+    class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden"
+  >
+    <!-- Subtle atmospheric background gradient overlay -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+      <div
+        class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-background/50 to-background"
+      ></div>
+    </div>
+    <!-- Top bar: brand mark (links home) + Docs link. Full nav intentionally omitted on this transactional screen -->
+    <header
+      class="top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin py-stack-md bg-surface-container-lowest/80 backdrop-blur-xl border-b border-outline-variant/30"
+    >
+      <div class="flex items-center gap-stack-sm">
+        <a
+          href="../index.html"
+          class="font-headline-md text-headline-md font-black tracking-tighter text-primary-fixed-dim"
+          >BIG O</a
+        >
+      </div>
+      <a
+        class="font-label-xs text-label-xs text-on-surface-variant hover:text-primary-fixed transition-all duration-300"
+        href="#"
+        >Docs</a
+      >
+    </header>
+    <main
+      class="relative z-10 flex-grow flex items-center justify-center px-container-margin min-h-screen"
+    >
+      <div class="w-full max-w-[400px] mt-6">
+        <!-- Sign-up card: heading, form, OAuth options, login link -->
+        <div
+          class="glass-card rounded-xl p-stack-lg flex flex-col gap-stack-lg shadow-2xl"
+        >
+          <div class="text-center space-y-unit">
+            <h1 class="font-headline-md text-headline-md text-on-surface">
+              Architect Your Database
+            </h1>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Join the next generation of high-performance infrastructure.
+            </p>
+          </div>
+          <!-- Name/email/password form. Submission is mocked in js/register.js (no real backend) -->
+          <form
+            class="flex flex-col gap-stack-md"
+            onsubmit="event.preventDefault()"
+          >
+            <div class="flex flex-col gap-unit">
+              <label
+                class="font-label-xs text-label-xs text-on-surface-variant ml-unit"
+                for="name"
+                >FULL NAME</label
+              >
+              <div class="relative group">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] transition-colors group-focus-within:text-primary-fixed-dim"
+                  >person</span
+                >
+                <input
+                  class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-3 pl-10 pr-4 text-body-sm text-on-surface placeholder:text-outline-variant/60 focus:outline-none focus:border-primary-fixed-dim cyan-glow transition-all"
+                  id="name"
+                  placeholder="Linus Torvalds"
+                  type="text"
+                />
+              </div>
+            </div>
+            <div class="flex flex-col gap-unit">
+              <label
+                class="font-label-xs text-label-xs text-on-surface-variant ml-unit"
+                for="email"
+                >EMAIL ADDRESS</label
+              >
+              <div class="relative group">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] transition-colors group-focus-within:text-primary-fixed-dim"
+                  >alternate_email</span
+                >
+                <input
+                  class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-3 pl-10 pr-4 text-body-sm text-on-surface placeholder:text-outline-variant/60 focus:outline-none focus:border-primary-fixed-dim cyan-glow transition-all"
+                  id="email"
+                  placeholder="dev@bigo.systems"
+                  type="email"
+                />
+              </div>
+            </div>
+            <div class="flex flex-col gap-unit">
+              <label
+                class="font-label-xs text-label-xs text-on-surface-variant ml-unit"
+                for="password"
+                >PASSWORD</label
+              >
+              <div class="relative group">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] transition-colors group-focus-within:text-primary-fixed-dim"
+                  >lock</span
+                >
+                <input
+                  class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-3 pl-10 pr-4 text-body-sm text-on-surface placeholder:text-outline-variant/60 focus:outline-none focus:border-primary-fixed-dim cyan-glow transition-all"
+                  id="password"
+                  placeholder="••••••••••••"
+                  type="password"
+                />
+              </div>
+            </div>
+            <div class="mt-stack-sm">
+              <button
+                class="w-full bg-primary-container text-on-primary-container font-label-xs text-label-xs py-4 rounded-lg tracking-widest hover:brightness-110 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-stack-sm"
+              >
+                CREATE ACCOUNT
+                <span class="material-symbols-outlined text-[18px]">bolt</span>
+              </button>
+            </div>
+          </form>
+          <!-- "or continue with" divider -->
+          <div class="flex items-center gap-gutter">
+            <div class="h-px flex-grow bg-outline-variant/30"></div>
+            <span
+              class="font-label-xs text-label-xs text-outline-variant shrink-0"
+              >OR CONTINUE WITH</span
+            >
+            <div class="h-px flex-grow bg-outline-variant/30"></div>
+          </div>
+          <!-- OAuth buttons (decorative placeholders, not wired to a provider) -->
+          <div class="grid grid-cols-2 gap-gutter">
+            <button
+              class="flex items-center justify-center gap-stack-sm bg-surface-container-lowest border border-outline-variant/30 py-3 rounded-lg font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 transition-all duration-300"
+            >
+              <svg
+                class="w-5 h-5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                ></path></svg
+              >GitHub
+            </button>
+            <button
+              class="flex items-center justify-center gap-stack-sm bg-surface-container-lowest border border-outline-variant/30 py-3 rounded-lg font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 transition-all duration-300"
+            >
+              <svg
+                class="w-5 h-5 shrink-0"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                ></path>
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                ></path>
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                  fill="#FBBC05"
+                ></path>
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                ></path></svg
+              >Google
+            </button>
+          </div>
+          <div class="text-center pt-stack-sm">
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Already have an account?
+              <a
+                class="text-primary-fixed-dim font-bold hover:underline decoration-primary-fixed-dim/40 underline-offset-4"
+                href="login.html"
+                >Log in</a
+              >
+            </p>
+          </div>
+        </div>
+        <!-- Legal disclaimer + live status strip -->
+        <footer class="mt-stack-lg text-center space-y-stack-sm">
+          <p class="font-label-xs text-label-xs text-outline-variant/60">
+            By registering, you agree to our
+            <a class="hover:text-primary-fixed transition-colors" href="#"
+              >Terms of Service</a
+            >
+            and
+            <a class="hover:text-primary-fixed transition-colors" href="#"
+              >Privacy Policy</a
+            >.
+          </p>
+          <div
+            class="flex justify-center gap-gutter font-label-xs text-label-xs text-outline-variant/40"
+          >
+            <span class="">STATUS: ONLINE</span>
+            <span
+              class="w-1 h-1 bg-primary-container rounded-full mt-1.5 animate-pulse"
+            ></span>
+            <span class="">REGION: GLOBAL-1</span>
+          </div>
+        </footer>
+      </div>
+    </main>
+    <!-- Page-specific behaviour: label focus state, card parallax, mock sign-up flow -->
+    <script src="js/register.js"></script>
+  </body>
+</html>

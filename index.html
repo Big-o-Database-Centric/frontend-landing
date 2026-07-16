@@ -1,214 +1,462 @@
-<!DOCTYPE html>
+<!doctype html>
+<!--
+  BIG O — Landing / Marketing page (index.html)
+  ---------------------------------------------------------------------
+  Updated hero/features design. Structure:
+    <nav>    Fixed top bar: brand mark + Sign Up / Login buttons
+    <main>
+      Hero section        - headline, CTA buttons, network topology mockup
+      Feature cards        - MySQL / PostgreSQL / SQL Server / MongoDB glass cards
+      Stats section        - social-proof numbers
+      CTA section          - final call to action before the footer
+    <footer> Site footer with legal links and social icons
+  Shared styling: css/base.css, css/components.css.
+  Shared Tailwind design tokens: js/tailwind-config.js.
+  Page-specific behaviour: js/landing.js.
+  Linked pages: login.html, register.html.
+-->
 <html lang="es" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIG O | Landing</title>
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Geist:wght@600;700&family=JetBrains+Mono:wght@450&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-
-    <!-- Tailwind (Play CDN) + shared design tokens -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Geist:wght@600;700&amp;family=JetBrains+Mono:wght@450&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="assets/js/tailwind.config.js"></script>
-</head>
-<body class="font-body-md text-on-surface selection:bg-primary-container selection:text-on-primary-container bg-surface">
-
-    <!-- ============================================================ -->
-    <!-- Top Navigation Bar                                            -->
-    <!-- ============================================================ -->
-    <nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,219,233,0.1)] transition-all duration-300 ease-in-out">
-        <div class="flex justify-between items-center px-container-margin py-stack-md w-full max-w-full">
-            <div class="flex items-center gap-2">
-                <span class="font-display-lg text-display-lg tracking-tighter text-primary-container">BIG O</span>
-                <div class="h-2 w-2 rounded-full bg-surface-tint status-pulse ml-2"></div>
-            </div>
-            <div class="hidden md:flex items-center gap-gutter">
-                <a href="#" class="font-body-md text-body-md text-primary-fixed-dim border-b-2 border-primary-fixed-dim pb-1 transition-all">Features</a>
-                <a href="#" class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors">Pricing</a>
-                <a href="#" class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors">Docs</a>
-                <a href="#" class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors">Login</a>
-            </div>
-            <button class="bg-primary-container text-on-primary-container px-6 py-2 font-title-sm text-title-sm font-bold rounded-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all active:scale-95">
-                Sign Up
-            </button>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <script src="js/tailwind-config.js"></script>
+  </head>
+  <body
+    class="font-body-md text-on-surface selection:bg-primary-container selection:text-on-primary-container bg-surface"
+  >
+    <!-- Top navigation bar: fixed, blurred background, brand mark + Sign Up / Login CTAs -->
+    <nav
+      class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,219,233,0.1)] transition-all duration-300 ease-in-out"
+    >
+      <div
+        class="flex justify-between items-center px-container-margin py-stack-md w-full max-w-full"
+      >
+        <div class="flex items-center gap-2">
+          <span
+            class="font-display-lg text-display-lg tracking-tighter text-primary-container"
+            >BIG O</span
+          >
+          <div
+            class="h-2 w-2 rounded-full bg-surface-tint status-pulse ml-2"
+          ></div>
         </div>
+        <div class="flex items-center gap-2">
+          <button
+            data-nav="register"
+            class="bg-primary-container text-on-primary-container px-6 py-2 font-title-sm text-title-sm font-bold rounded hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] transition-all active:scale-95"
+          >
+            Sign Up
+          </button>
+          <button
+            data-nav="login"
+            class="border border-primary-container/50 text-primary-container px-6 py-2 font-title-sm text-title-sm font-bold rounded hover:bg-primary-container/10 transition-all active:scale-95"
+          >
+            Login
+          </button>
+        </div>
+      </div>
     </nav>
+    <main class="pt-32">
+      <!-- Hero section: headline, subcopy, primary/secondary CTAs and the network topology mockup -->
+      <section
+        class="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-container-margin"
+      >
+        <!-- Technical Grid Background -->
+        <div
+          class="absolute inset-0 z-0 opacity-10 pointer-events-none"
+          style="
+            background-image: radial-gradient(#00f0ff 1px, transparent 1px);
+            background-size: 40px 40px;
+          "
+        ></div>
 
-    <main class="pt-24">
-
-        <!-- ======================================================== -->
-        <!-- Hero Section                                              -->
-        <!-- ======================================================== -->
-        <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-container-margin">
-            <!-- Animated Background Placeholder -->
-
-            <div class="relative z-10 max-w-5xl text-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full border border-primary-container/30 bg-primary-container/5 backdrop-blur-sm">
-                    <span class="flex h-2 w-2 rounded-full bg-primary-container"></span>
-                    <span class="font-label-xs text-label-xs uppercase tracking-widest text-primary-fixed-dim">Engine v4.0.2 Stable</span>
+        <div class="relative z-10 max-w-5xl text-center">
+          <h1
+            class="font-display-lg text-display-lg md:text-[64px] md:leading-[1.1] text-primary-container mb-6 max-w-4xl mx-auto mt-8"
+          >
+            Manage your databases in question of seconds,
+            <span class="text-primary">in one place</span>
+          </h1>
+          <p
+            class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mb-10"
+          >
+            The command center for modern developers. Real-time observability,
+            zero-latency queries, and seamless multi-region cluster management
+            under a unified interface.
+          </p>
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-gutter mb-20"
+          >
+            <button
+              data-nav="register"
+              class="w-full sm:w-auto px-8 py-4 bg-primary-container text-on-primary-container font-title-sm text-title-sm font-bold rounded-xl hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] transition-all flex items-center justify-center gap-2"
+            >
+              Deploy Console
+              <span class="material-symbols-outlined">terminal</span>
+            </button>
+            <button
+              class="w-full sm:w-auto px-8 py-4 bg-surface-container-high border border-outline-variant text-primary font-title-sm text-title-sm font-bold rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2"
+            >
+              View Documentation
+              <span class="material-symbols-outlined">menu_book</span>
+            </button>
+          </div>
+          <!-- Product mockup: fake app-window chrome framing an illustrative network visualization -->
+          <div class="relative w-full max-w-5xl mx-auto group">
+            <div
+              class="absolute inset-0 bg-primary-container/20 blur-[120px] -z-10 group-hover:bg-primary-container/30 transition-all duration-700"
+            ></div>
+            <div
+              class="relative rounded-2xl overflow-hidden border border-outline-variant/40 shadow-2xl bg-surface-container-lowest"
+            >
+              <div
+                class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 border-b border-outline-variant/30"
+              >
+                <div class="flex gap-1.5">
+                  <div
+                    class="w-2.5 h-2.5 rounded-full bg-surface-tint/40"
+                  ></div>
+                  <div
+                    class="w-2.5 h-2.5 rounded-full bg-primary-container/40"
+                  ></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-outline/20"></div>
                 </div>
-                <h1 class="font-display-lg text-display-lg md:text-[64px] md:leading-[1.1] text-primary-container mb-6 max-w-4xl mx-auto">Administra tus bases de datos en cuestion de segundos, <span class="text-primary">en un solo lugar</span></h1>
-                <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mb-10">
-                    The command center for modern developers. Real-time observability, zero-latency queries, and seamless multi-region cluster management under a unified interface.
-                </p>
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-gutter">
-                    <button class="w-full sm:w-auto px-8 py-4 bg-primary-container text-on-primary-container font-title-sm text-title-sm font-bold rounded-xl hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] transition-all flex items-center justify-center gap-2">
-                        Deploy Console <span class="material-symbols-outlined">terminal</span>
-                    </button>
-                    <button class="w-full sm:w-auto px-8 py-4 bg-surface-container-high border border-outline-variant text-primary font-title-sm text-title-sm font-bold rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2">
-                        View Documentation <span class="material-symbols-outlined">menu_book</span>
-                    </button>
+                <div
+                  class="mx-auto font-code-sm text-code-sm text-on-surface-variant/60 flex items-center gap-2"
+                >
+                  <span class="material-symbols-outlined text-[14px]">lan</span>
+                  network-topology-mapper.bin
                 </div>
-
-                <!-- Mockup Grid -->
-                <div class="mt-20 relative group">
-                    <div class="absolute inset-0 bg-primary-container/20 blur-[100px] -z-10 group-hover:bg-primary-container/30 transition-all"></div>
-                    <div class="glass-panel rounded-xl overflow-hidden shadow-2xl border border-outline-variant/40">
-                        <div class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 border-b border-outline-variant/30">
-                            <div class="flex gap-1.5">
-                                <div class="w-2.5 h-2.5 rounded-full bg-error/40"></div>
-                                <div class="w-2.5 h-2.5 rounded-full bg-surface-tint/40"></div>
-                                <div class="w-2.5 h-2.5 rounded-full bg-primary-container/40"></div>
-                            </div>
-                            <div class="mx-auto font-code-sm text-code-sm text-on-surface-variant/60 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[14px]">lock</span> cluster-us-east-01.bigo.sh
-                            </div>
-                        </div>
-                        <img class="w-full h-auto object-cover border-t border-white/5" data-alt="A cinematic, high-detail UI dashboard for a database management system called BIG O. The interface features dark mode with midnight blue tones, vibrant cyan data visualizations, glowing code blocks in a syntax highlighter, and complex server node maps. The lighting is cold and futuristic, suggesting a high-performance command center for pro-developers in a tech-futurist world." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDldBSN_vpmY85WQBd0cjZMwd1UnsDSx-iHY5jTwviG2a1jLo7ME1BE5Mmh6H30lXfh8bhRaElfIRzbeFQQcXyVJGz3BWbt5zW3Oe93fvA5d-6aqFi8695KpjX-oO7zcSEtzNzfALLxHsQe20vVxg21W1mYtPT3aHCX7axSx3OFK72ZEhI0Li7RGbrXKL5sOUJENUjqekEB1TZYN7uLGA2If3R5sktiicBpOSeZNhd5u1UpqFIQ">
-                    </div>
+              </div>
+              <div class="aspect-video w-full bg-surface-dim relative">
+                <img
+                  class="w-full h-full object-cover opacity-80 mix-blend-screen"
+                  alt="High-tech abstract visualization of a global database network. Minimalist lines, glowing nodes in cyan neon #00f0ff, dark blue background #051424. Clean, geometric, architectural style."
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxnKAtg7FljAN1Tc8oU3SFr6Ov-9M0CvM3HNIvyxVdk9urDBoQ-iiRMx44MGXC_qOh17aOpE0A11fmyRYGs8A7IV_uKZ9daBUs74QIWlptV1lFPsxN3SvqJtbsodplkeYLMYopKZndpLf-YTCotrkgnYQnFZZgW41T4EJlMC8No0_foLXYr-rWp_2Hdflp086iShVmpmBI4cSQ95mRCLBM-_cpIFSXVOXfauXySpy8z8K1t_fMZhGfJg"
+                />
+                <!-- Decorative floating stat panels over the mockup image -->
+                <div
+                  class="absolute top-8 left-8 p-4 glass-panel rounded-lg border-primary-container/20 hidden md:block"
+                >
+                  <div class="font-code-sm text-primary-container mb-2">
+                    QUERY_PERF.STATS
+                  </div>
+                  <div class="h-[2px] w-12 bg-primary-container/30 mb-4"></div>
+                  <div class="flex flex-col gap-2">
+                    <div class="h-1 w-24 bg-primary-container/10 rounded"></div>
+                    <div class="h-1 w-16 bg-primary-container/10 rounded"></div>
+                    <div class="h-1 w-20 bg-primary-container/20 rounded"></div>
+                  </div>
                 </div>
+                <div
+                  class="absolute bottom-8 right-8 p-4 glass-panel rounded-lg border-primary-container/20 hidden md:block"
+                >
+                  <div class="font-code-sm text-primary-container mb-2">
+                    SYSTEM_HEALTH
+                  </div>
+                  <div class="flex gap-1 items-end h-8">
+                    <div class="w-1 h-4 bg-primary-container/40"></div>
+                    <div class="w-1 h-6 bg-primary-container/60"></div>
+                    <div class="w-1 h-3 bg-primary-container/40"></div>
+                    <div class="w-1 h-8 bg-primary-container"></div>
+                    <div class="w-1 h-5 bg-primary-container/60"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-        </section>
-
-        <!-- ======================================================== -->
-        <!-- Brief Features Section                                    -->
-        <!-- ======================================================== -->
-        <section class="py-24 px-container-margin max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-
-                <!-- Speed Card -->
-                <div class="glass-panel p-stack-lg rounded-xl neon-glow transition-all group">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all">
-                        <span class="material-symbols-outlined text-primary-container text-[32px]">bolt</span>
-                    </div>
-                    <h3 class="font-headline-md text-headline-md text-primary mb-4">Speed</h3>
-                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                        Execute complex JOINs and aggregations with our proprietary O-Engine. Zero-overhead execution plans that outperform standard CLI tools by 40%.
-                    </p>
-                    <div class="mt-8 font-code-sm text-code-sm text-primary-container flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-all">
-                        <span class="">LATENCY: 0.002ms</span>
-                        <span class="material-symbols-outlined text-[14px]">trending_down</span>
-                    </div>
-                </div>
-
-                <!-- Security Card -->
-                <div class="glass-panel p-stack-lg rounded-xl neon-glow transition-all group">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all">
-                        <span class="material-symbols-outlined text-primary-container text-[32px]">security</span>
-                    </div>
-                    <h3 class="font-headline-md text-headline-md text-primary mb-4">Security</h3>
-                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                        Enterprise-grade RBAC and End-to-End tunneling. Your credentials never leave your browser, encrypted with hardware-level protocols.
-                    </p>
-                    <div class="mt-8 font-code-sm text-code-sm text-primary-container flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-all">
-                        <span class="">AES-256-GCM ACTIVE</span>
-                        <span class="material-symbols-outlined text-[14px]">verified_user</span>
-                    </div>
-                </div>
-
-                <!-- Multi-database Card -->
-                <div class="glass-panel p-stack-lg rounded-xl neon-glow transition-all group">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all">
-                        <span class="material-symbols-outlined text-primary-container text-[32px]">hub</span>
-                    </div>
-                    <h3 class="font-headline-md text-headline-md text-primary mb-4">Multi-DB</h3>
-                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                        One console for PostgreSQL, MySQL, Redis, and MongoDB. Cross-database querying allows you to bridge data silos effortlessly.
-                    </p>
-                    <div class="mt-8 font-code-sm text-code-sm text-primary-container flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-all">
-                        <span class="">12+ ADAPTERS READY</span>
-                        <span class="material-symbols-outlined text-[14px]">layers</span>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ======================================================== -->
-        <!-- Stats Section (Social Proof)                              -->
-        <!-- ======================================================== -->
-        <section class="py-16 border-y border-outline-variant/20 bg-surface-container-low/30">
-            <div class="px-container-margin max-w-7xl mx-auto flex flex-wrap justify-center md:justify-between gap-stack-lg">
-                <div class="text-center">
-                    <div class="font-display-lg text-display-lg text-primary-container">250M+</div>
-                    <div class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant">Queries Optimized</div>
-                </div>
-                <div class="text-center">
-                    <div class="font-display-lg text-display-lg text-primary-container">15k+</div>
-                    <div class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant">Active Developers</div>
-                </div>
-                <div class="text-center">
-                    <div class="font-display-lg text-display-lg text-primary-container">99.99%</div>
-                    <div class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant">Uptime SLA</div>
-                </div>
-                <div class="text-center">
-                    <div class="font-display-lg text-display-lg text-primary-container">4.0s</div>
-                    <div class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant">Avg Setup Time</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ======================================================== -->
-        <!-- CTA Section                                               -->
-        <!-- ======================================================== -->
-        <section class="py-32 px-container-margin">
-            <div class="max-w-4xl mx-auto glass-panel p-stack-lg rounded-2xl text-center border-primary-container/20 overflow-hidden relative">
-                <div class="absolute -top-24 -left-24 w-64 h-64 bg-primary-container/10 blur-[80px] rounded-full"></div>
-                <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-surface-tint/10 blur-[80px] rounded-full"></div>
-                <h2 class="font-headline-md text-headline-md text-primary mb-4 relative z-10">Ready to break the O(n) barrier?</h2>
-                <p class="font-body-md text-body-md text-on-surface-variant mb-10 max-w-xl mx-auto relative z-10">
-                    Join the elite engineering teams already scaling their infrastructure with BIG O. Start your free cluster today.
-                </p>
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-gutter relative z-10">
-                    <button class="w-full sm:w-auto px-10 py-4 bg-primary-container text-on-primary-container font-title-sm text-title-sm font-bold rounded-lg hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all">
-                        Get Started Free
-                    </button>
-                    <button class="w-full sm:w-auto px-10 py-4 border border-outline text-on-surface font-title-sm text-title-sm font-bold rounded-lg hover:bg-surface-container-high transition-all">
-                        Contact Sales
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ============================================================ -->
-    <!-- Footer                                                        -->
-    <!-- ============================================================ -->
-    <footer class="w-full py-stack-lg bg-surface-container-lowest border-t border-outline-variant/10">
-        <div class="flex flex-col md:flex-row justify-between items-center px-container-margin max-w-7xl mx-auto">
-            <div class="mb-gutter md:mb-0">
-                <div class="font-title-sm text-title-sm text-primary-fixed-dim mb-2">BIG O Systems</div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 BIG O Systems. All rights reserved.</p>
-            </div>
-            <div class="flex gap-gutter mb-gutter md:mb-0">
-                <a class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors" href="#">Privacy</a>
-                <a class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors" href="#">Terms</a>
-                <a class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors" href="#">Status</a>
-            </div>
-            <div class="flex gap-stack-md">
-                <a class="text-on-surface-variant hover:text-primary-container transition-colors" href="#">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
-                </a>
-                <a class="text-on-surface-variant hover:text-primary-container transition-colors" href="#">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
-                </a>
-            </div>
+          </div>
         </div>
-    </footer>
+      </section>
 
-    <!-- Page behavior (extracted from the original inline <script>) -->
-    <script src="assets/js/landing.js"></script>
-</body>
+      <!-- Database engine highlights: four glass cards (MySQL / PostgreSQL / SQL Server / MongoDB) -->
+      <section class="py-24 px-container-margin max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter">
+          <!-- MySQL Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >database</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >storage</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              MySQL
+            </h3>
+            <p
+              class="font-display-lg text-[28px] text-primary-container font-bold"
+            >
+              12.4k+
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              Databases
+            </p>
+          </div>
+          <!-- PostgreSQL Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >database</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >dataset</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              PostgreSQL
+            </h3>
+            <p
+              class="font-display-lg text-[28px] text-primary-container font-bold"
+            >
+              8.9k+
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              Databases
+            </p>
+          </div>
+          <!-- SQL Server Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >database</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >table_chart</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              SQL Server
+            </h3>
+            <p
+              class="font-display-lg text-[28px] text-primary-container font-bold"
+            >
+              5.2k+
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              Databases
+            </p>
+          </div>
+          <!-- MongoDB Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >database</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >schema</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              MongoDB
+            </h3>
+            <p
+              class="font-display-lg text-[28px] text-primary-container font-bold"
+            >
+              7.1k+
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              Databases
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Social-proof stats bar: usage numbers -->
+      <section
+        class="py-16 border-y border-outline-variant/20 bg-surface-container-low/30 relative overflow-hidden"
+      >
+        <div
+          class="absolute inset-0 z-0 opacity-5 pointer-events-none"
+          style="
+            background-image: linear-gradient(
+              90deg,
+              #00f0ff 1px,
+              transparent 1px
+            );
+            background-size: 80px 100%;
+          "
+        ></div>
+        <div
+          class="px-container-margin max-w-7xl mx-auto flex flex-wrap justify-center md:justify-between gap-stack-lg relative z-10"
+        >
+          <div class="text-center">
+            <div class="font-display-lg text-display-lg text-primary-container">
+              250M+
+            </div>
+            <div
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
+            >
+              Queries Optimized
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="font-display-lg text-display-lg text-primary-container">
+              15k+
+            </div>
+            <div
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
+            >
+              Active Developers
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="font-display-lg text-display-lg text-primary-container">
+              99.99%
+            </div>
+            <div
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
+            >
+              Uptime SLA
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="font-display-lg text-display-lg text-primary-container">
+              4.0s
+            </div>
+            <div
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
+            >
+              Avg Setup Time
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Closing call-to-action panel before the footer -->
+      <section class="py-32 px-container-margin">
+        <div
+          class="max-w-4xl mx-auto p-stack-lg rounded-2xl text-center overflow-hidden relative group"
+        >
+          <h2
+            class="font-headline-md text-headline-md text-primary mb-4 relative z-10"
+          >
+            Ready for setup your databases fastly?
+          </h2>
+          <p
+            class="font-body-md text-body-md text-on-surface-variant mb-10 max-w-xl mx-auto relative z-10"
+          >
+            Join the elite engineering teams already scaling their
+            infrastructure with BIG O. Start your free cluster today.
+          </p>
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-gutter relative z-10"
+          >
+            <button
+              data-nav="register"
+              class="w-full sm:w-auto px-10 py-4 bg-primary-container text-on-primary-container font-title-sm text-title-sm font-bold rounded-lg hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all"
+            >
+              Get Started Free
+            </button>
+            <button
+              class="w-full sm:w-auto px-10 py-4 border border-outline text-on-surface font-title-sm text-title-sm font-bold rounded-lg hover:bg-surface-container-high transition-all"
+            >
+              Contact Sales
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- Site footer: brand, legal links, social icons -->
+    <footer
+      class="w-full py-stack-lg bg-surface-container-lowest border-t border-outline-variant/10"
+    >
+      <div
+        class="flex flex-col md:flex-row justify-between items-center px-container-margin max-w-7xl mx-auto"
+      >
+        <div class="mb-gutter md:mb-0">
+          <div class="font-title-sm text-title-sm text-primary-fixed-dim mb-2">
+            BIG O Systems
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            © 2024 BIG O Systems. All rights reserved.
+          </p>
+        </div>
+        <div class="flex gap-gutter mb-gutter md:mb-0">
+          <a
+            class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors"
+            href="#"
+            >Privacy</a
+          >
+          <a
+            class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors"
+            href="#"
+            >Terms</a
+          >
+          <a
+            class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary-fixed-dim transition-colors"
+            href="#"
+            >Status</a
+          >
+        </div>
+        <div class="flex gap-stack-md">
+          <a
+            class="text-on-surface-variant hover:text-primary-container transition-colors"
+            href="#"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+              ></path>
+            </svg>
+          </a>
+          <a
+            class="text-on-surface-variant hover:text-primary-container transition-colors"
+            href="#"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path
+                d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"
+                class=""
+              ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+    <script src="js/landing.js"></script>
+  </body>
 </html>

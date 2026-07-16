@@ -1,8 +1,7 @@
-/**
- * BIG O — Landing page micro-interactions
- * -----------------------------------------------------------------------
- * Extracted verbatim from the inline <script> at the bottom of
- * "big_o_landing_page/code.html". Behavior is unchanged.
+/*
+ * BIG O — landing.js
+ * Behaviour extracted verbatim from the inline <script> at the bottom of
+ * big_o_landing_page/code.html. Logic is unchanged.
  */
 
 // Micro-interaction: Navbar scroll effect
@@ -26,4 +25,13 @@ document.querySelectorAll('.glass-panel').forEach(card => {
         card.style.setProperty('--mouse-x', `${x}px`);
         card.style.setProperty('--mouse-y', `${y}px`);
     });
+});
+
+// Navigation: route primary calls-to-action to the registration flow.
+document.querySelectorAll('[data-nav="register"]').forEach(el => {
+    el.addEventListener('click', () => { window.location.href = 'views/register.html'; });
+});
+
+document.querySelectorAll('[data-nav="login"]').forEach(el => {
+    el.addEventListener('click', () => { window.location.href = 'views/login.html'; });
 });
