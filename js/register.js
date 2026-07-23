@@ -1,31 +1,97 @@
 /*
  * BIG O — register.js
- * Behaviour extracted verbatim from the inline <script> at the bottom of
- * big_o_register/code.html, with one addition: submitting the form now
- * navigates to dashboard.html, mirroring the login flow, so the
- * register -> dashboard step is connected.
+ * Flujo de registro de la landing.
+ *
+ * Estado actual: la creación de cuenta sigue simulada, porque el backend
+ * NestJS aún no es alcanzable desde el navegador (falta el reverse proxy
+ * /api/ en el VPS). Lo real: la validación de campos y el feedback de los
+ * botones OAuth. Cuando el backend esté conectado, el bloque "SIMULACIÓN"
+ * se reemplaza por un fetch('/api/auth/register').
  */
-document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('focus', () => {
-        input.parentElement.parentElement.querySelector('label').classList.add('text-primary-fixed-dim');
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const message = document.getElementById('form-message');
+
+    // Resalta la etiqueta del campo enfocado (comportamiento visual original).
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', () => {
+            input.parentElement.parentElement.querySelector('label')?.classList.add('text-primary-fixed-dim');
+        });
+        input.addEventListener('blur', () => {
+            input.parentElement.parentElement.querySelector('label')?.classList.remove('text-primary-fixed-dim');
+        });
     });
-    input.addEventListener('blur', () => {
-        input.parentElement.parentElement.querySelector('label').classList.remove('text-primary-fixed-dim');
+
+    // Parallax sutil de la tarjeta.
+    const card = document.querySelector('.glass-card');
+    if (card) {
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 50;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 50;
+            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+    }
+
+    function showMessage(text, isError = true) {
+        if (!message) return;
+        message.textContent = text;
+        message.classList.remove('hidden');
+        message.classList.toggle('text-red-400', isError);
+        message.classList.toggle('text-primary-fixed-dim', !isError);
+    }
+
+    function clearMessage() {
+        if (!message) return;
+        message.textContent = '';
+        message.classList.add('hidden');
+    }
+
+    // Devuelve el mensaje de error de validación, o null si los datos son válidos.
+    function validate(name, email, password) {
+        if (!name) return 'Ingresa tu nombre.';
+        if (!email) return 'Ingresa tu correo.';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'El correo no tiene un formato válido.';
+        if (!password) return 'Ingresa una contraseña.';
+        if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+        return null;
+    }
+
+    [nameInput, emailInput, passwordInput].forEach(input => {
+        input?.addEventListener('input', clearMessage);
+    });
+
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            const error = validate(name, email, password);
+            if (error) {
+                showMessage(error);
+                const firstInvalid = !name ? nameInput : !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? emailInput : passwordInput;
+                firstInvalid.focus();
+                return;
+            }
+
+            clearMessage();
+
+            // ----- SIMULACIÓN (reemplazar por fetch('/api/auth/register') cuando el proxy esté listo) -----
+            window.location.href = '/views/dashboard.html';
+            // ----- FIN SIMULACIÓN -----
+        });
+    }
+
+    // Botones OAuth: todavía sin backend. Feedback honesto en vez de un clic muerto.
+    document.querySelectorAll('[data-provider]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const provider = btn.dataset.provider === 'github' ? 'GitHub' : 'Google';
+            showMessage(`El registro con ${provider} estará disponible pronto.`, false);
+        });
     });
 });
-
-// Subtle parallax effect on the card
-const card = document.querySelector('.glass-card');
-document.addEventListener('mousemove', (e) => {
-    const xAxis = (window.innerWidth / 2 - e.pageX) / 50;
-    const yAxis = (window.innerHeight / 2 - e.pageY) / 50;
-    card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-});
-
-// Navigation: after (mock) account creation, continue on to the dashboard.
-const registerForm = document.querySelector('form');
-if (registerForm) {
-    registerForm.addEventListener('submit', () => {
-        window.location.href = '/views/dashboard.html';
-    });
-}

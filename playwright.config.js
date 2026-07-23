@@ -17,4 +17,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  // Levanta el servidor estático local salvo que se apunte a un despliegue real.
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: 'node tests/static-server.js',
+        port: 8081,
+        reuseExistingServer: true,
+      },
 });

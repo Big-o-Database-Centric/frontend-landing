@@ -84,6 +84,7 @@
         <!-- Email/password form. Submission is mocked in js/login.js (no real backend) -->
         <form
           class="flex flex-col gap-gutter"
+          novalidate
           onsubmit="event.preventDefault()"
         >
           <div class="flex flex-col gap-stack-sm">
@@ -106,6 +107,8 @@
                 name="email"
                 placeholder="dev@big-o.systems"
                 type="email"
+                autocomplete="email"
+                required
               />
             </div>
           </div>
@@ -136,9 +139,17 @@
                 name="password"
                 placeholder="••••••••"
                 type="password"
+                autocomplete="current-password"
+                required
               />
             </div>
           </div>
+          <!-- Zona de mensajes de error/estado; oculta hasta que login.js la use -->
+          <p
+            id="form-message"
+            role="alert"
+            class="hidden font-body-sm text-body-sm text-red-400 text-center"
+          ></p>
           <button
             class="mt-2 w-full bg-primary-fixed-dim hover:bg-primary-fixed text-on-primary-fixed font-bold py-3 px-6 rounded-lg transition-all duration-300 btn-hover-glow active:scale-[0.98] flex items-center justify-center gap-stack-sm"
             type="submit"
@@ -158,9 +169,12 @@
           >
           <div class="flex-grow h-[1px] bg-outline-variant/30"></div>
         </div>
-        <!-- OAuth buttons (decorative placeholders, not wired to a provider) -->
+        <!-- OAuth buttons: aún sin backend. js/login.js informa el estado al hacer clic. -->
         <div class="grid grid-cols-2 gap-gutter">
           <button
+            id="oauth-github"
+            type="button"
+            data-provider="github"
             class="flex items-center justify-center gap-stack-sm bg-surface-container-lowest border border-outline-variant/30 py-3 rounded-lg font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 transition-all duration-300"
           >
             <svg
@@ -175,6 +189,9 @@
             >GitHub
           </button>
           <button
+            id="oauth-google"
+            type="button"
+            data-provider="google"
             class="flex items-center justify-center gap-stack-sm bg-surface-container-lowest border border-outline-variant/30 py-3 rounded-lg font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface hover:border-outline-variant/60 transition-all duration-300"
           >
             <svg
