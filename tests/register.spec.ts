@@ -34,10 +34,9 @@ test.describe('Validación del formulario de registro', () => {
     await expect(page).toHaveURL(/\/views\/dashboard\.html$/, { timeout: 8000 });
   });
 
-  test('clic en un proveedor OAuth informa disponibilidad, sin redirigir', async ({ page }) => {
+  test('los botones OAuth apuntan al backend', async ({ page }) => {
     await page.goto('/views/register.html');
-    await page.click('#oauth-github');
-    await expect(page.locator('#form-message')).toContainText(/GitHub/);
-    await expect(page).toHaveURL(/\/views\/register\.html$/);
+    await expect(page.locator('#oauth-github')).toHaveAttribute('href', '/api/auth/github');
+    await expect(page.locator('#oauth-google')).toHaveAttribute('href', '/api/auth/google');
   });
 });

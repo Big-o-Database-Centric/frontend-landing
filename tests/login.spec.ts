@@ -57,20 +57,15 @@ test.describe('Validación del formulario de login', () => {
   });
 });
 
-test.describe('Botones OAuth (aún sin backend)', () => {
-  test('clic en Google informa que estará disponible pronto, sin redirigir', async ({ page }) => {
+test.describe('Botones OAuth', () => {
+  test('Google apunta al backend', async ({ page }) => {
     await page.goto('/views/login.html');
-    await page.click('#oauth-google');
-    await expect(page.locator('#form-message')).toContainText(/Google/);
-    await expect(page.locator('#form-message')).toContainText(/pronto/i);
-    await expect(page).toHaveURL(/\/views\/login\.html$/);
+    await expect(page.locator('#oauth-google')).toHaveAttribute('href', '/api/auth/google');
   });
 
-  test('clic en GitHub informa que estará disponible pronto, sin redirigir', async ({ page }) => {
+  test('GitHub apunta al backend', async ({ page }) => {
     await page.goto('/views/login.html');
-    await page.click('#oauth-github');
-    await expect(page.locator('#form-message')).toContainText(/GitHub/);
-    await expect(page).toHaveURL(/\/views\/login\.html$/);
+    await expect(page.locator('#oauth-github')).toHaveAttribute('href', '/api/auth/github');
   });
 });
 
@@ -94,7 +89,13 @@ test.describe('Flujo simulado con datos válidos', () => {
     await expect(page.getByRole('heading', { name: 'Active Databases' })).toBeVisible();
   });
 
-  test('el botón Cerrar sesión en el dashboard vuelve a login', async ({ page }) => {
+  test('el botón Cerrar sesión llama al backend y vuelve a login', async ({ page }) => {
+    let logoutCalled = false;
+    await page.route('**/api/auth/logout', (route) => {
+      logoutCalled = true;
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+    });
+
     await page.goto('/views/login.html');
     await page.fill('#email', 'dev@big-o.systems');
     await page.fill('#password', 'secret123');
@@ -102,5 +103,6 @@ test.describe('Flujo simulado con datos válidos', () => {
     await expect(page).toHaveURL(/\/views\/dashboard\.html$/, { timeout: 8000 });
     await page.click('[data-nav="logout"]');
     await expect(page).toHaveURL(/\/views\/login\.html$/);
+    expect(logoutCalled).toBe(true);
   });
 });

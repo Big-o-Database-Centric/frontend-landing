@@ -16,9 +16,13 @@ document.querySelectorAll('.glass').forEach(card => {
     });
 });
 
-// Navigation: logout returns to the login screen.
+// Navigation: logout invalida la sesión en el backend (borra la fila de
+// Sessions vía sp_Logout) y luego vuelve al login. Redirige igual aunque la
+// red falle, para no dejar al usuario atrapado en el dashboard.
 document.querySelectorAll('[data-nav="logout"]').forEach(btn => {
     btn.addEventListener('click', () => {
-        window.location.href = '/views/login.html';
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+            .catch(() => {})
+            .finally(() => { window.location.href = '/views/login.html'; });
     });
 });

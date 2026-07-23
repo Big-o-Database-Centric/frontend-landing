@@ -90,13 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // ----- FIN SIMULACIÓN -----
     });
 
-    // Botones OAuth: todavía sin backend. Feedback honesto en vez de un clic muerto.
-    document.querySelectorAll('[data-provider]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const provider = btn.dataset.provider === 'github' ? 'GitHub' : 'Google';
-            showMessage(`El acceso con ${provider} estará disponible pronto.`, false);
-        });
-    });
+    // Los botones OAuth ahora son enlaces (<a href="/api/auth/...">): la
+    // navegación al backend la maneja el navegador, sin JS.
 
     // Muestra el error devuelto por un callback OAuth fallido (?error=...).
     const oauthError = new URLSearchParams(window.location.search).get('error');
