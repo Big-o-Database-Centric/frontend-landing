@@ -44,11 +44,52 @@ jobs:
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.IMAGE_NAME }}:latest
-            docker stop frontend-landing || true
-            docker rm frontend-landing || true
-            docker run -d \
-              --name frontend-landing \
+            start_frontend() {
+              name="$1"
+              shift
+              docker run -d \
+              --name "$name" \
               --restart unless-stopped \
-              -p 8081:80 \
+              "$@" \
               ${{ env.IMAGE_NAME }}:latest
+            }
+            healthy() {
+              container="$1"
+              sleep 3
+              docker inspect --format '{{.State.Running}}' "$container" | grep -qx true && \
+                docker exec "$container" nginx -t && \
+                docker exec "$container" wget -q -O /dev/null http://127.0.0.1/
+            }
+            docker rm --force frontend-landing-candidate >/dev/null 2>&1 || true
+            if docker inspect frontend-landing-previous >/dev/null 2>&1; then
+              if docker inspect frontend-landing >/dev/null 2>&1; then
+                docker rm --force frontend-landing-previous
+              else
+                docker rename frontend-landing-previous frontend-landing
+              fi
+            fi
+            start_frontend frontend-landing-candidate
+            if ! healthy frontend-landing-candidate; then
+              docker logs frontend-landing-candidate || true
+              docker rm --force frontend-landing-candidate || true
+              exit 1
+            fi
+            docker rm --force frontend-landing-candidate
+            previous_exists=false
+            if docker inspect frontend-landing >/dev/null 2>&1; then
+              docker rename frontend-landing frontend-landing-previous
+              docker stop frontend-landing-previous
+              previous_exists=true
+            fi
+            start_frontend frontend-landing -p 8081:80
+            if ! healthy frontend-landing; then
+              docker logs frontend-landing || true
+              docker rm --force frontend-landing || true
+              if [ "$previous_exists" = true ]; then
+                docker start frontend-landing-previous
+                docker rename frontend-landing-previous frontend-landing
+              fi
+              exit 1
+            fi
+            if [ "$previous_exists" = true ]; then docker rm frontend-landing-previous; fi
             docker image prune -f

@@ -1,16 +1,15 @@
 /*
  * BIG O — tailwind-config.js
  * ---------------------------------------------------------------------
- * Single source of truth for the Tailwind CDN theme (design tokens from
+ * Single source of truth for the locally compiled Tailwind theme (design tokens from
  * big_o/DESIGN.md: colors, radii, spacing, fonts). Every page previously
  * repeated its own copy of this object inline; they were all identical
  * except that some pages were missing a few font keys the others had.
  * This file is the union of all four, so no page loses any utility it
- * relied on. Load this AFTER the Tailwind CDN <script> tag and BEFORE
- * any markup that uses Tailwind classes.
+ * relied on. It is consumed at build time to generate css/tailwind.css.
  */
-try {
-  tailwind.config = {
+module.exports = {
+    content: ["./index.html", "./views/**/*.html", "./js/**/*.js"],
     darkMode: "class",
     theme: {
       extend: {
@@ -100,4 +99,3 @@ try {
       }
     }
   };
-} catch (_e) {}

@@ -4,12 +4,14 @@
   "private": true,
   "description": "Pruebas E2E de front con Playwright",
   "scripts": {
+    "build:css": "tailwindcss -c js/tailwind-config.js -i css/tailwind-input.css -o css/tailwind.css --minify",
     "test": "playwright test",
     "test:headed": "playwright test --headed"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
     "@types/node": "^26.1.1",
+    "tailwindcss": "^3.4.17",
     "typescript": "^7.0.2"
   }
 }
