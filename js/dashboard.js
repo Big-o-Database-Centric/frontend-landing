@@ -1,4 +1,4 @@
-const engines = ['mysql', 'postgresql', 'sqlserver', 'mongodb'];
+let engines = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -7,9 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const provisionDialog = document.getElementById('provision-dialog');
   const credentialsDialog = document.getElementById('credentials-dialog');
   const credentialsContent = document.getElementById('credentials-content');
+  const engineSelect = document.getElementById('engine');
 
   const showMessage = (text) => { message.textContent = text; message.classList.remove('hidden'); };
   const redirectLogin = () => { window.location.href = '/views/login.html'; };
+  const engineName = (engine) => ({ mysql: 'MySQL', postgresql: 'PostgreSQL', mongodb: 'MongoDB', sqlserver: 'SQL Server' }[engine] || engine);
   const api = async (path, options = {}) => {
     const response = await fetch(path, { credentials: 'include', ...options });
     if (response.status === 401) { redirectLogin(); throw new Error('Unauthorized'); }
@@ -24,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     metrics.replaceChildren(...engines.map((engine) => {
       const card = document.createElement('article');
       card.className = 'glass p-stack-md rounded-xl neon-glow flex flex-col gap-2';
-      card.innerHTML = `<h3 class="font-title-sm text-primary">${engine === 'sqlserver' ? 'SQL Server' : engine[0].toUpperCase() + engine.slice(1)}</h3><p class="text-2xl text-primary-fixed-dim">${totals[engine]} <span class="text-sm font-normal text-on-surface-variant">Bases de datos</span></p>`;
+      card.innerHTML = `<h3 class="font-title-sm text-primary">${engineName(engine)}</h3><p class="text-2xl text-primary-fixed-dim">${totals[engine]} <span class="text-sm font-normal text-on-surface-variant">Bases de datos</span></p>`;
       return card;
     }));
     document.getElementById('database-total').textContent = `${databases.length} total`;
@@ -41,11 +43,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   };
 
+  const renderEngineOptions = () => {
+    engineSelect.replaceChildren(...engines.map((engine) => {
+      const option = document.createElement('option');
+      option.value = engine;
+      option.textContent = engineName(engine);
+      return option;
+    }));
+  };
+
   const load = async () => {
     try {
-      const [user, databases] = await Promise.all([api('/api/me'), api('/api/managed-databases')]);
+      const [user, databases, capabilities] = await Promise.all([api('/api/me'), api('/api/managed-databases'), api('/api/managed-databases/capabilities')]);
       document.getElementById('user-name').textContent = user.Name;
       document.getElementById('user-email').textContent = user.Email;
+      engines = capabilities.engines;
+      renderEngineOptions();
       render(databases);
     } catch (error) { if (error.message !== 'Unauthorized') showMessage(error.message); }
   };

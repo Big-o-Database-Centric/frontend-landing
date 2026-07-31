@@ -23,6 +23,11 @@ test('dashboard renders managed databases returned by the API', async ({ page })
       State: 'active',
     }]),
   }));
+  await page.route('**/api/managed-databases/capabilities', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ engines: ['mysql', 'postgresql'] }),
+  }));
 
   await page.goto('/views/dashboard.html', { waitUntil: 'networkidle' });
 
@@ -31,4 +36,5 @@ test('dashboard renders managed databases returned by the API', async ({ page })
   await expect(page.locator('#database-list')).toContainText('shop');
   await expect(page.locator('#database-list')).toContainText('db.example.test:34601');
   await expect(page.locator('#database-list')).toContainText('20 MB limit');
+  await expect(page.locator('#engine option')).toHaveText(['MySQL', 'PostgreSQL']);
 });
