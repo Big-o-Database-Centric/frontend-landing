@@ -1,4 +1,5 @@
 let engines = [];
+let maxPerUser = 3;
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -8,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const credentialsDialog = document.getElementById('credentials-dialog');
   const credentialsContent = document.getElementById('credentials-content');
   const engineSelect = document.getElementById('engine');
+  const openProvision = document.getElementById('open-provision-dialog');
+  const limitMessage = document.getElementById('database-limit');
+  const credentialStorageKey = 'big-o:managed-database-credentials';
+  const credentialLifetimeMs = 10 * 60 * 1000;
 
   const showMessage = (text) => { message.textContent = text; message.classList.remove('hidden'); };
   const redirectLogin = () => { window.location.href = '/views/login.html'; };
@@ -20,6 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return body;
   };
 
+  const consumingCapacity = (database) => ['pending', 'active', 'deleting'].includes(database.State || 'active');
+  const updateLimit = (databases) => {
+    const used = databases.filter(consumingCapacity).length;
+    const reached = used >= maxPerUser;
+    openProvision.disabled = reached;
+    openProvision.setAttribute('aria-disabled', String(reached));
+    limitMessage.textContent = reached
+      ? `Alcanzaste el máximo de ${maxPerUser} bases de datos activas. Elimina una para crear otra.`
+      : `Puedes crear hasta ${maxPerUser} bases de datos activas.`;
+    limitMessage.classList.remove('hidden');
+    document.getElementById('database-total').textContent = `${used} de ${maxPerUser} bases en uso`;
+  };
+
   const render = (databases) => {
     const totals = Object.fromEntries(engines.map((engine) => [engine, 0]));
     databases.forEach((database) => { if (Object.hasOwn(totals, database.Engine)) totals[database.Engine] += 1; });
@@ -29,16 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<h3 class="font-title-sm text-primary">${engineName(engine)}</h3><p class="text-2xl text-primary-fixed-dim">${totals[engine]} <span class="text-sm font-normal text-on-surface-variant">Bases de datos</span></p>`;
       return card;
     }));
-    document.getElementById('database-total').textContent = `${databases.length} total`;
-    if (!databases.length) { list.innerHTML = '<p class="glass p-6 rounded-xl text-on-surface-variant">No databases yet. Provision your first database to begin.</p>'; return; }
+    updateLimit(databases);
+    if (!databases.length) {
+      list.innerHTML = '<p class="glass p-6 rounded-xl text-on-surface-variant">Aún no tienes bases de datos. Crea la primera para comenzar.</p>';
+      return;
+    }
     list.replaceChildren(...databases.map((database) => {
       const row = document.createElement('article');
       row.className = 'glass p-container-margin rounded-xl';
       const state = database.State || 'active';
       const usage = database.QuotaBytes ? `${(database.QuotaBytes / 1024 / 1024).toFixed(0)} MB limit` : 'Quota unavailable';
-      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="font-code-sm text-on-surface-variant"></p></div><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div></div>`;
+      const canDelete = ['active', 'failed'].includes(state);
+      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${database.DatabaseId}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}</div></div>`;
       row.querySelector('h3').textContent = `${database.DatabaseName} · ${database.Engine}`;
-      row.querySelector('.font-code-sm.text-on-surface-variant').textContent = database.HostName ? `${database.HostName}:${database.Port} · ${database.DatabaseUser}` : 'Provisioning connection…';
+      row.querySelector('.connection').textContent = database.HostName ? `${database.HostName}:${database.Port} · ${database.DatabaseUser}` : state === 'deleting' ? 'Eliminando conexión…' : 'Provisioning connection…';
       return row;
     }));
   };
@@ -52,33 +74,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   };
 
+  const formatCredentials = (result) => `Engine: ${result.engine}\nHost: ${result.host}\nPort: ${result.port}\nDatabase: ${result.databaseName}\nUsername: ${result.username}\nPassword: ${result.password}`;
+  const clearCredentials = () => sessionStorage.removeItem(credentialStorageKey);
+  const showCredentials = (content) => {
+    credentialsContent.textContent = content;
+    if (!credentialsDialog.open) credentialsDialog.showModal();
+  };
+  const saveCredentials = (content) => {
+    sessionStorage.setItem(credentialStorageKey, JSON.stringify({ content, expiresAt: Date.now() + credentialLifetimeMs }));
+  };
+  const restoreCredentials = () => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(credentialStorageKey) || 'null');
+      if (!saved || !saved.content || saved.expiresAt < Date.now()) { clearCredentials(); return; }
+      showCredentials(saved.content);
+    } catch { clearCredentials(); }
+  };
+  const setProvisioning = (active) => {
+    const submit = document.getElementById('provision-submit');
+    const name = document.getElementById('database-name');
+    const progress = document.getElementById('provision-progress');
+    submit.disabled = active;
+    engineSelect.disabled = active;
+    name.disabled = active;
+    progress.textContent = active ? `Creando ${engineName(engineSelect.value)}… Esto puede tardar unos segundos; puedes esperar en esta pantalla.` : '';
+    progress.classList.toggle('hidden', !active);
+    provisionDialog.setAttribute('aria-busy', String(active));
+  };
+
   const load = async () => {
     try {
       const [user, databases, capabilities] = await Promise.all([api('/api/me'), api('/api/managed-databases'), api('/api/managed-databases/capabilities')]);
       document.getElementById('user-name').textContent = user.Name;
       document.getElementById('user-email').textContent = user.Email;
       engines = capabilities.engines;
+      maxPerUser = capabilities.maxPerUser || 3;
       renderEngineOptions();
       render(databases);
+      restoreCredentials();
     } catch (error) { if (error.message !== 'Unauthorized') showMessage(error.message); }
   };
 
-  document.getElementById('open-provision-dialog').addEventListener('click', () => provisionDialog.showModal());
+  openProvision.addEventListener('click', () => provisionDialog.showModal());
   document.querySelectorAll('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => {
-    button.closest('dialog').close();
-    if (button.closest('dialog') === credentialsDialog) credentialsContent.textContent = '';
+    const dialog = button.closest('dialog');
+    dialog.close();
+    if (dialog === credentialsDialog) { credentialsContent.textContent = ''; clearCredentials(); }
   }));
   document.getElementById('provision-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const submit = document.getElementById('provision-submit');
     const formMessage = document.getElementById('provision-message');
-    submit.disabled = true; formMessage.classList.add('hidden');
+    setProvisioning(true);
+    formMessage.classList.add('hidden');
     try {
-      const result = await api('/api/managed-databases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine: document.getElementById('engine').value, databaseName: document.getElementById('database-name').value.trim() }) });
-      credentialsContent.textContent = `Engine: ${result.engine}\nHost: ${result.host}\nPort: ${result.port}\nDatabase: ${result.databaseName}\nUsername: ${result.username}\nPassword: ${result.password}`;
-      provisionDialog.close(); credentialsDialog.showModal(); event.target.reset(); await load();
-    } catch (error) { formMessage.textContent = error.message; formMessage.classList.remove('hidden'); }
-    finally { submit.disabled = false; }
+      const result = await api('/api/managed-databases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine: engineSelect.value, databaseName: document.getElementById('database-name').value.trim() }) });
+      const credentials = formatCredentials(result);
+      saveCredentials(credentials);
+      provisionDialog.close();
+      showCredentials(credentials);
+      event.target.reset();
+      await load();
+    } catch (error) {
+      formMessage.textContent = error.message;
+      formMessage.classList.remove('hidden');
+    } finally { setProvisioning(false); }
+  });
+  list.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-delete-id]');
+    if (!button || !window.confirm('¿Eliminar esta base de datos y todos sus datos? Esta acción no se puede deshacer.')) return;
+    button.disabled = true;
+    button.textContent = 'Eliminando…';
+    try {
+      await api(`/api/managed-databases/${button.dataset.deleteId}`, { method: 'DELETE' });
+      await load();
+      showMessage('La base de datos fue eliminada y liberó capacidad para crear otra.');
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = 'Eliminar';
+      showMessage(error.message);
+    }
   });
   document.getElementById('copy-credentials').addEventListener('click', async () => { await navigator.clipboard.writeText(credentialsContent.textContent); });
   document.querySelectorAll('[data-nav="logout"]').forEach((button) => button.addEventListener('click', async () => { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined); redirectLogin(); }));
