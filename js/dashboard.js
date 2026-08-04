@@ -1,5 +1,6 @@
 let engines = [];
 let maxPerUser = 3;
+const DEFAULT_ENGINES = ['mysql', 'postgresql', 'sqlserver', 'mongodb'];
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const [user, databases, capabilities] = await Promise.all([api('/api/me'), api('/api/managed-databases'), api('/api/managed-databases/capabilities')]);
       document.getElementById('user-name').textContent = user.Name;
       document.getElementById('user-email').textContent = user.Email;
-      engines = capabilities.engines;
+      engines = capabilities.engines && capabilities.engines.length > 0 ? capabilities.engines : DEFAULT_ENGINES;
       maxPerUser = capabilities.maxPerUser || 3;
       renderEngineOptions();
       render(databases);
