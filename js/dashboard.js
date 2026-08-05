@@ -1,6 +1,7 @@
 let engines = [];
 let maxPerUser = 3;
 const DEFAULT_ENGINES = ['mysql', 'postgresql', 'sqlserver', 'mongodb'];
+const MONGO_PROVISION_API_BASE = 'https://mongo.szapatar.dev';
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -12,18 +13,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const engineSelect = document.getElementById('engine');
   const openProvision = document.getElementById('open-provision-dialog');
   const limitMessage = document.getElementById('database-limit');
+  const apiKeyInput = document.getElementById('api-key');
   const credentialStorageKey = 'big-o:managed-database-credentials';
+  const publicApiKeyStorageKey = 'big-o:mongodb-api-key';
   const credentialLifetimeMs = 10 * 60 * 1000;
 
   const showMessage = (text) => { message.textContent = text; message.classList.remove('hidden'); };
   const redirectLogin = () => { window.location.href = '/views/login.html'; };
   const engineName = (engine) => ({ mysql: 'MySQL', postgresql: 'PostgreSQL', mongodb: 'MongoDB', sqlserver: 'SQL Server' }[engine] || engine);
+
+  const parseApiResponse = async (response) => {
+    const body = await response.json().catch(() => null);
+    if (!response.ok) {
+      const errorMessage = body?.error?.message || body?.message || `${response.status} ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return body;
+  };
+
   const api = async (path, options = {}) => {
     const response = await fetch(path, { credentials: 'include', ...options });
     if (response.status === 401) { redirectLogin(); throw new Error('Unauthorized'); }
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.message || body.error || 'Request failed');
-    return body;
+    return parseApiResponse(response);
+  };
+
+  const publicApi = async (path, options = {}) => {
+    const response = await fetch(`${MONGO_PROVISION_API_BASE}${path}`, options);
+    return parseApiResponse(response);
   };
 
   const consumingCapacity = (database) => ['pending', 'active', 'deleting'].includes(database.State || 'active');
@@ -59,8 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const state = database.State || 'active';
       const usage = database.QuotaBytes ? `${(database.QuotaBytes / 1024 / 1024).toFixed(0)} MB limit` : 'Quota unavailable';
       const canDelete = ['active', 'failed'].includes(state);
-      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${database.DatabaseId}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}</div></div>`;
-      row.querySelector('h3').textContent = `${database.DatabaseName} · ${database.Engine}`;
+      const id = database.DatabaseId || database.id || database._id || '';
+      const engine = database.Engine || database.engine || 'mongodb';
+      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}</div></div>`;
+      row.querySelector('h3').textContent = `${database.DatabaseName || database.database || 'Database'} · ${engineName(engine)}`;
       row.querySelector('.connection').textContent = database.HostName ? `${database.HostName}:${database.Port} · ${database.DatabaseUser}` : state === 'deleting' ? 'Eliminando conexión…' : 'Provisioning connection…';
       return row;
     }));
@@ -75,8 +93,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   };
 
-  const formatCredentials = (result) => `Engine: ${result.engine}\nHost: ${result.host}\nPort: ${result.port}\nDatabase: ${result.databaseName}\nUsername: ${result.username}\nPassword: ${result.password}`;
+  const formatCredentials = (result) => {
+    const database = result.database || result.databaseName || 'unknown';
+    const username = result.username || 'unknown';
+    const password = result.password || 'unknown';
+    const connectionString = result.connectionString || result.connection || 'N/A';
+    const engine = result.engine || 'mongodb';
+    return `Engine: ${engine}\nDatabase: ${database}\nUsername: ${username}\nPassword: ${password}\nConnection: ${connectionString}`;
+  };
   const clearCredentials = () => sessionStorage.removeItem(credentialStorageKey);
+  const clearPublicApiKey = () => sessionStorage.removeItem(publicApiKeyStorageKey);
+  const restorePublicApiKey = () => sessionStorage.getItem(publicApiKeyStorageKey) || '';
+  const savePublicApiKey = (key) => sessionStorage.setItem(publicApiKeyStorageKey, key);
+  const setPublicApiKeyInput = () => {
+    if (apiKeyInput) apiKeyInput.value = restorePublicApiKey();
+  };
   const showCredentials = (content) => {
     credentialsContent.textContent = content;
     if (!credentialsDialog.open) credentialsDialog.showModal();
@@ -113,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderEngineOptions();
       render(databases);
       restoreCredentials();
+      setPublicApiKeyInput();
     } catch (error) { if (error.message !== 'Unauthorized') showMessage(error.message); }
   };
 
@@ -128,7 +160,26 @@ document.addEventListener('DOMContentLoaded', () => {
     setProvisioning(true);
     formMessage.classList.add('hidden');
     try {
-      const result = await api('/api/managed-databases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine: engineSelect.value, databaseName: document.getElementById('database-name').value.trim() }) });
+      const username = document.getElementById('database-name').value.trim();
+      const apiKey = document.getElementById('api-key').value.trim();
+      let result;
+
+      if (engineSelect.value === 'mongodb') {
+        if (!apiKey) throw new Error('API key is required to provision a MongoDB database.');
+        result = await publicApi('/databases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          body: JSON.stringify({ username })
+        });
+        savePublicApiKey(apiKey);
+      } else {
+        result = await api('/api/managed-databases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ engine: engineSelect.value, databaseName: username })
+        });
+      }
+
       const credentials = formatCredentials(result);
       saveCredentials(credentials);
       provisionDialog.close();
@@ -143,10 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
   list.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-delete-id]');
     if (!button || !window.confirm('¿Eliminar esta base de datos y todos sus datos? Esta acción no se puede deshacer.')) return;
+    const engine = button.dataset.engine;
+    const deleteId = button.dataset.deleteId;
     button.disabled = true;
     button.textContent = 'Eliminando…';
     try {
-      await api(`/api/managed-databases/${button.dataset.deleteId}`, { method: 'DELETE' });
+      if (engine === 'mongodb') {
+        const apiKey = restorePublicApiKey();
+        if (!apiKey) throw new Error('Para eliminar una base MongoDB ingresa primero la API key en el formulario de creación.');
+        await publicApi(`/databases/${deleteId}`, { method: 'DELETE', headers: { 'X-API-Key': apiKey } });
+      } else {
+        await api(`/api/managed-databases/${deleteId}`, { method: 'DELETE' });
+      }
       await load();
       showMessage('La base de datos fue eliminada y liberó capacidad para crear otra.');
     } catch (error) {
