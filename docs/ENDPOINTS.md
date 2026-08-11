@@ -1,4 +1,8 @@
-# Contrato de endpoints — MongoDB sobre AWS
+# Contratos de endpoints — MongoDB sobre AWS e IA de Big O
+
+Las secciones 1 a 5 documentan **exclusivamente el servicio MongoDB sobre AWS**. La sección
+6 documenta las rutas de IA servidas por el backend de Big O. Son servicios distintos y no
+comparten un formato universal de errores.
 
 ## 1. Crear una base de datos
 
@@ -62,9 +66,9 @@
 }
 ```
 
-## 5. Formato estándar de errores
+## 5. Formato de errores del servicio MongoDB sobre AWS
 
-Todas las respuestas de error siguen este formato:
+Las respuestas de error de las rutas MongoDB de las secciones 1 a 4 siguen este formato:
 
 ```json
 {
@@ -154,6 +158,20 @@ persisten prompts ni respuestas en el navegador ni en Big O. El backend conserva
 metadatos de cuota, estado, latencia y conteos de tokens.
 
 ### Estados de error de IA
+
+Las rutas `/api/ai/*` son una excepción explícita al formato MongoDB de la sección 5: no
+devuelven `{"error":{"code":"RATE_LIMIT",...}}`. En particular:
+
+- validación `400` y los estados `401`, `502`, `503` y `504` usan objetos JSON seguros de
+  Nest con `message` y `statusCode` (la validación de DTO puede devolver varias entradas en
+  `message`);
+- una cuota local `429` devuelve como body una cadena JSON: `"User AI quota reached"` o
+  `"Global AI quota reached"`;
+- una cuota del proveedor `429` devuelve la cadena JSON `"AI service quota reached"`;
+- un fallo inesperado puede devolver un objeto genérico `{"error":"Database error"}`.
+
+La interfaz decide el texto visible únicamente a partir del status HTTP y nunca muestra el
+body interno. Por eso el contrato de presentación es:
 
 | HTTP | Comportamiento de la interfaz |
 |---:|---|
