@@ -23,6 +23,13 @@ async function mockProfileAndCapabilities(page: Page) {
   await page.route('**/api/ai/capabilities', (route) => route.fulfill({ json: capabilities }));
 }
 
+async function mockDashboard(page: Page) {
+  await page.route('**/api/managed-databases/capabilities', (route) => route.fulfill({
+    json: { engines: ['mysql'], maxPerUser: 3 },
+  }));
+  await page.route('**/api/managed-databases', (route) => route.fulfill({ json: [] }));
+}
+
 test('authenticated user chats without receiving the provider key', async ({ page }) => {
   await mockProfileAndCapabilities(page);
   let requestBody: unknown;
@@ -108,10 +115,41 @@ test('logs out through Big O before returning to login', async ({ page }) => {
   });
 
   await page.goto('/views/ai.html');
-  await page.locator('[data-nav="logout"]').click();
+  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
 
   await expect(page).toHaveURL(/\/views\/login\.html$/);
   expect(logoutMethod).toBe('POST');
+});
+
+test('mobile user navigates from dashboard to AI and logs out', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockProfileAndCapabilities(page);
+  await mockDashboard(page);
+  let logoutMethod = '';
+  await page.route('**/api/auth/logout', async (route) => {
+    logoutMethod = route.request().method();
+    await route.fulfill({ status: 204 });
+  });
+
+  await page.goto('/views/dashboard.html');
+  const aiLink = page.getByRole('link', { name: 'IA', exact: true });
+  await expect(aiLink).toBeVisible();
+  await aiLink.click();
+  await expect(page).toHaveURL(/\/views\/ai\.html$/);
+  await expect(page.locator('#ai-model')).toHaveText('llama-8b-nvidia');
+  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/views\/login\.html$/);
+  expect(logoutMethod).toBe('POST');
+});
+
+test('dashboard IA navigation has a clean accessible name', async ({ page }) => {
+  await mockProfileAndCapabilities(page);
+  await mockDashboard(page);
+
+  await page.goto('/views/dashboard.html');
+
+  await expect(page.getByRole('link', { name: 'IA', exact: true })).toBeVisible();
 });
 
 test('new conversation clears the transcript and request context', async ({ page }) => {
@@ -136,6 +174,64 @@ test('new conversation clears the transcript and request context', async ({ page
     messages: [{ role: 'user', content: 'Pregunta nueva' }],
     maxTokens: 256,
   });
+});
+
+for (const lateResult of ['assistant', 'error'] as const) {
+  test(`new conversation ignores a late ${lateResult} response`, async ({ page }) => {
+    await mockProfileAndCapabilities(page);
+    let releaseResponse!: () => void;
+    const responseGate = new Promise<void>((resolve) => { releaseResponse = resolve; });
+    await page.route('**/api/ai/chat', async (route) => {
+      await responseGate;
+      if (lateResult === 'error') {
+        await route.fulfill({ status: 502, json: { message: 'late internal failure' } });
+        return;
+      }
+      await route.fulfill({
+        json: { ...successfulChat, message: { role: 'assistant', content: 'Respuesta tardía' } },
+      });
+    });
+
+    await page.goto('/views/ai.html');
+    await page.locator('#ai-message').fill('Pregunta anterior');
+    await page.locator('#ai-submit').click();
+    await expect(page.locator('#ai-progress')).toHaveText('Generando respuesta…');
+    await page.locator('#ai-new-conversation').click();
+    await expect(page.locator('#ai-transcript')).toContainText('Inicia una conversación');
+    releaseResponse();
+    await expect(page.locator('#ai-progress')).toBeHidden();
+
+    await expect(page.locator('#ai-transcript')).not.toContainText('Pregunta anterior');
+    await expect(page.locator('#ai-transcript')).not.toContainText('Respuesta tardía');
+    await expect(page.locator('#ai-error')).toBeHidden();
+    await expect(page.locator('body')).not.toContainText('late internal failure');
+  });
+}
+
+test('rejects empty, whitespace, and messages over 4000 characters', async ({ page }) => {
+  await mockProfileAndCapabilities(page);
+  let requests = 0;
+  await page.route('**/api/ai/chat', async (route) => {
+    requests += 1;
+    await route.fulfill({ json: successfulChat });
+  });
+
+  await page.goto('/views/ai.html');
+  const input = page.locator('#ai-message');
+  await expect(input).toHaveAttribute('required', '');
+  await expect(input).toHaveAttribute('maxlength', '4000');
+  await input.fill('');
+  await page.locator('#ai-submit').click();
+  expect(await input.evaluate((element) => (element as HTMLTextAreaElement).validity.valueMissing)).toBe(true);
+  await input.fill('   ');
+  await page.locator('#ai-submit').click();
+  await input.evaluate((element) => { (element as HTMLTextAreaElement).value = 'x'.repeat(4001); });
+  await page.locator('#ai-form').evaluate((form) => {
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+  await page.waitForTimeout(100);
+
+  expect(requests).toBe(0);
 });
 
 test('renders model content as text rather than markup', async ({ page }) => {

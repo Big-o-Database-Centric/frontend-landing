@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     if (busy) return;
     const content = input.value.trim();
-    if (!content) return;
+    if (!content || content.length > input.maxLength) return;
 
     clearError();
     const userMessage = { role: 'user', content };
