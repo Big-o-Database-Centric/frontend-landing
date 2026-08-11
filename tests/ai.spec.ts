@@ -50,6 +50,74 @@ test('authenticated user chats without receiving the provider key', async ({ pag
   await expect(page.locator('body')).not.toContainText('pr_ai_');
 });
 
+test('bounds multi-turn history as contiguous suffixes after dropping older context', async ({ page }) => {
+  const long = (label: string, fill: string) => `${label}:${fill.repeat(4000 - label.length - 1)}`;
+  const userOne = long('user-one', 'a');
+  const assistantOne = long('assistant-one', 'b');
+  const userTwo = long('user-two', 'c');
+  const assistantTwo = long('assistant-two', 'd');
+  const userThree = long('user-three', 'e');
+  const assistantThree = long('assistant-three', 'f');
+  const userFour = long('user-four', 'g');
+  const assistantFour = long('assistant-four', 'h');
+  const requestBodies: Array<{ messages: Array<{ role: string; content: string }>; maxTokens: number }> = [];
+  const assistantResponses = [assistantOne, assistantTwo, assistantThree, assistantFour];
+
+  await mockProfileAndCapabilities(page);
+  await page.route('**/api/ai/chat', async (route) => {
+    requestBodies.push(route.request().postDataJSON());
+    await route.fulfill({
+      json: {
+        ...successfulChat,
+        message: { role: 'assistant', content: assistantResponses[requestBodies.length - 1] },
+      },
+    });
+  });
+
+  await page.goto('/views/ai.html');
+  for (const [message, response] of [[userOne, assistantOne], [userTwo, assistantTwo], [userThree, assistantThree], [userFour, assistantFour]]) {
+    await page.locator('#ai-message').fill(message);
+    await page.locator('#ai-submit').click();
+    await expect(page.locator('#ai-transcript')).toContainText(response);
+  }
+
+  expect(requestBodies).toEqual([
+    { messages: [{ role: 'user', content: userOne }], maxTokens: 256 },
+    {
+      messages: [
+        { role: 'user', content: userOne },
+        { role: 'assistant', content: assistantOne },
+        { role: 'user', content: userTwo },
+      ],
+      maxTokens: 256,
+    },
+    {
+      messages: [
+        { role: 'user', content: userTwo },
+        { role: 'assistant', content: assistantTwo },
+        { role: 'user', content: userThree },
+      ],
+      maxTokens: 256,
+    },
+    {
+      messages: [
+        { role: 'user', content: userThree },
+        { role: 'assistant', content: assistantThree },
+        { role: 'user', content: userFour },
+      ],
+      maxTokens: 256,
+    },
+  ]);
+  for (const { messages, maxTokens } of requestBodies) {
+    expect(messages.length).toBeGreaterThanOrEqual(1);
+    expect(messages.length).toBeLessThanOrEqual(10);
+    expect(messages.every(({ content }) => content === content.trim() && content.length > 0 && content.length <= 4000)).toBe(true);
+    expect(messages.reduce((total, { content }) => total + content.length, 0)).toBeLessThanOrEqual(12000);
+    expect(maxTokens).toBe(256);
+  }
+  await expect(page.locator('#ai-transcript')).toContainText(assistantFour);
+});
+
 test('shows progress, blocks duplicates, and keeps no browser-stored transcript', async ({ page }) => {
   await mockProfileAndCapabilities(page);
   let requests = 0;

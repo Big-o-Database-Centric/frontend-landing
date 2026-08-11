@@ -48,6 +48,19 @@ document.addEventListener('DOMContentLoaded', () => {
     remainingLabel.textContent = `${remaining} de ${dailyLimit} disponibles hoy`;
   };
 
+  const requestHistory = () => {
+    const history = [];
+    let contentLength = 0;
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index];
+      const content = typeof message.content === 'string' ? message.content.trim() : '';
+      if (!content || content.length > 4000 || history.length === 10 || contentLength + content.length > 12000) break;
+      history.unshift({ role: message.role, content });
+      contentLength += content.length;
+    }
+    return history;
+  };
+
   const emptyState = () => {
     const wrapper = document.createElement('div');
     wrapper.className = 'ai-empty-state my-auto max-w-md self-center text-center';
@@ -120,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await api('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: messages.slice(-10), maxTokens: 256 }),
+        body: JSON.stringify({ messages: requestHistory(), maxTokens: 256 }),
       });
       updateRemaining(result.remaining.today);
       if (conversationVersion === submittedVersion) {
