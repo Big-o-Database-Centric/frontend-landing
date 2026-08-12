@@ -1,3 +1,73 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .ai-workspace {
+    box-shadow: 0 22px 70px rgba(1, 15, 31, 0.38);
+  }
+
+  .ai-model-signal {
+    position: relative;
+    background: linear-gradient(90deg, rgba(0, 219, 233, 0.07), transparent 58%);
+  }
+
+  .ai-model-signal::after {
+    position: absolute;
+    right: 1.25rem;
+    bottom: -1px;
+    left: 1.25rem;
+    height: 1px;
+    content: '';
+    background: linear-gradient(90deg, rgba(0, 219, 233, 0.62), rgba(0, 219, 233, 0));
+  }
+
+  .ai-signal-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #00dbe9;
+    box-shadow: 0 0 0 4px rgba(0, 219, 233, 0.09), 0 0 18px rgba(0, 219, 233, 0.42);
+  }
+
+  .ai-message {
+    width: min(86%, 42rem);
+    border: 1px solid rgba(59, 73, 75, 0.42);
+    border-radius: 0.5rem;
+    padding: 1rem 1.125rem;
+  }
+
+  .ai-message-user {
+    align-self: flex-end;
+    background: rgba(28, 43, 60, 0.86);
+  }
+
+  .ai-message-assistant {
+    align-self: flex-start;
+    border-left-color: rgba(0, 219, 233, 0.76);
+    background: rgba(18, 33, 49, 0.82);
+  }
+
+  .ai-transcript-scroll {
+    scrollbar-color: rgba(132, 148, 149, 0.45) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 639px) {
+  .ai-message {
+    width: 94%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

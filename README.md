@@ -60,6 +60,42 @@ Enlaces sin página equivalente en este proyecto (Features, Pricing, Docs,
 Forgot password, Terms, Privacy, Status, etc.) se dejaron como `href="#"`,
 igual que en el original, ya que no existe una pantalla a la cual apuntar.
 
+## Chat de IA administrada
+
+El chat se encuentra en `/views/ai.html` y requiere una sesión vigente de Big O:
+
+1. Iniciar sesión y abrir la opción **IA** desde el dashboard (o navegar a
+   `/views/ai.html`). Si la sesión expiró, la página vuelve al login.
+2. Comprobar el modelo y el indicador «N de M disponibles hoy».
+3. Escribir un mensaje de hasta 4.000 caracteres y pulsar **Enviar**. Mientras espera, el
+   formulario muestra «Generando respuesta…» y bloquea envíos duplicados.
+4. Pulsar **Nueva conversación** para eliminar el transcript y el contexto local. Recargar
+   también lo elimina; no se guarda en `localStorage` ni `sessionStorage`.
+
+Big O administra centralmente la credencial de PolyService. Los usuarios registrados nunca
+la configuran ni la reciben. El navegador llama exclusivamente a
+`/api/ai/capabilities` y `/api/ai/chat` con la cookie httpOnly de Big O; jamás llama al
+proveedor directamente.
+
+Mensajes seguros esperados:
+
+| Situación | Mensaje visible |
+|---|---|
+| Contenido inválido (`400`) | `Revisa el contenido del mensaje.` |
+| Cuota agotada (`429`) | `Alcanzaste el límite de uso de IA.` |
+| Proveedor no disponible (`502` o `503`) | `El servicio de IA no está disponible.` |
+| Tiempo de espera (`504`) | `El servicio de IA tardó demasiado.` |
+| Otro error | `No fue posible consultar la IA. Intenta de nuevo.` |
+
+El detalle del contrato HTTP está en [`docs/ENDPOINTS.md`](docs/ENDPOINTS.md).
+
+### Verificación local
+
+```powershell
+npm.cmd run build:css
+npx.cmd playwright test
+```
+
 ## Nota importante
 
 Ninguna clase de Tailwind, estructura HTML, texto ni imagen fue modificada.

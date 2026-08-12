@@ -96,6 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
       option.textContent = engineName(engine);
       return option;
     }));
+    syncApiKeyField();
+  };
+
+  const syncApiKeyField = () => {
+    const isMongoDb = engineSelect.value === 'mongodb';
+    apiKeyInput.closest('label').classList.toggle('hidden', !isMongoDb);
+    apiKeyInput.disabled = !isMongoDb;
+    apiKeyInput.required = isMongoDb;
+    document.getElementById('database-name').pattern = isMongoDb
+      ? '[a-z][a-z0-9_-]{2,62}'
+      : '[a-z][a-z0-9_]{2,62}';
   };
 
   const formatCredentials = (result) => {
@@ -199,13 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
     dialog.close();
     if (dialog === credentialsDialog) { credentialsContent.textContent = ''; clearCredentials(); }
   }));
+  engineSelect.addEventListener('change', syncApiKeyField);
   document.getElementById('provision-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const formMessage = document.getElementById('provision-message');
     setProvisioning(true);
     formMessage.classList.add('hidden');
     try {
-      const username = document.getElementById('database-name').value.trim();
+      const databaseName = document.getElementById('database-name').value.trim();
       const apiKey = document.getElementById('api-key').value.trim();
       let result;
 
@@ -214,14 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await publicApi('/databases', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
-          body: JSON.stringify({ username })
+          body: JSON.stringify({ databaseName })
         });
         savePublicApiKey(apiKey);
       } else {
         result = await api('/api/managed-databases', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ engine: engineSelect.value, databaseName: username })
+          body: JSON.stringify({ engine: engineSelect.value, databaseName })
         });
       }
 
