@@ -1,0 +1,131 @@
+<!doctype html>
+<html class="dark" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BIG O | MongoDB</title>
+    <link rel="stylesheet" href="/css/tailwind.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@450&family=Geist:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body class="min-h-screen bg-background text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+    <aside class="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-outline-variant/20 bg-surface-container-low py-stack-lg md:flex">
+      <div class="px-container-margin mb-stack-lg">
+        <a href="/index.html" class="font-headline-md text-headline-md font-bold text-primary-fixed-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-fixed-dim">BIG O</a>
+      </div>
+      <nav class="flex-1 space-y-1 px-4" aria-label="Navegación principal">
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/dashboard.html">
+          <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+          <span class="font-label-xs uppercase tracking-widest">Overview</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/ai.html">
+          <span class="material-symbols-outlined" aria-hidden="true">neurology</span>
+          <span class="font-label-xs uppercase tracking-widest">IA</span>
+        </a>
+        <a class="flex items-center gap-3 border-r-4 border-primary-fixed-dim bg-primary-container/10 px-4 py-3 text-primary-fixed-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/mongodb.html" aria-current="page">
+          <span class="material-symbols-outlined" aria-hidden="true">storage</span>
+          <span class="font-label-xs uppercase tracking-widest">MongoDB</span>
+        </a>
+      </nav>
+      <div class="mt-auto space-y-4 border-t border-outline-variant/20 px-4 pt-4">
+        <div class="flex flex-col px-4">
+          <span id="user-name" class="font-body-sm text-on-surface">Cargando…</span>
+          <span id="user-email" class="text-[10px] text-on-surface-variant"></span>
+        </div>
+        <button data-nav="logout" class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-error hover:bg-error-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-error">
+          <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+          <span class="font-label-xs uppercase tracking-widest">Cerrar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <header class="flex items-center justify-between border-b border-outline-variant/20 bg-surface-container-low px-container-margin py-stack-md md:hidden">
+      <a href="/index.html" class="font-headline-md text-headline-md-mobile font-bold text-primary-fixed-dim">BIG O</a>
+      <div class="flex items-center gap-3">
+        <nav class="flex items-center gap-4 font-label-xs uppercase tracking-widest" aria-label="Navegación móvil">
+          <a class="text-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/dashboard.html">Overview</a>
+          <a class="text-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/ai.html">IA</a>
+          <a class="text-primary-fixed-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/mongodb.html" aria-current="page">MongoDB</a>
+        </nav>
+        <button data-nav="logout" type="button" class="rounded-lg p-2 text-error hover:bg-error-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-error" aria-label="Cerrar sesión"><span class="material-symbols-outlined" aria-hidden="true">logout</span></button>
+      </div>
+    </header>
+
+    <main class="min-h-screen md:ml-64">
+      <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-container-margin py-stack-lg">
+        <header class="mb-stack-md flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="mb-1 font-label-xs uppercase tracking-[0.18em] text-primary-fixed-dim">Administración de MongoDB</p>
+            <h1 class="font-headline-md text-headline-md-mobile text-primary sm:text-headline-md">MongoDB Management</h1>
+            <p class="mt-1 max-w-2xl text-on-surface-vidant">Administre sus bases de datos MongoDB provisionadas a través de Big O.</p>
+          </div>
+        </header>
+
+        <section class="space-y-6">
+          <!-- Estadísticas de MongoDB -->
+          <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-title-sm text-on-surface">Estadísticas de MongoDB</h2>
+              <button id="refresh-stats" class="px-3 py-1 rounded-lg text-sm text-on-surface-variant hover:bg-surface-container/50 hover:text-on-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim">
+                <span class="material-symbols-outlined" aria-hidden="true">refresh</span> Actualizar
+              </button>
+            </div>
+            <div id="mongodb-stats" class="space-y-3">
+              <p class="text-on-surface-variant">Cargando estadísticas...</p>
+            </div>
+          </div>
+
+          <!-- Lista de bases de datos MongoDB -->
+          <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-title-sm text-on-surface">Bases de datos MongoDB</h2>
+              <button id="open-provision-mongo" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-md font-label-xs uppercase tracking-widest hover:brightness-110">
+                <span class="material-symbols-outlined" aria-hidden="true">add</span> Nueva base de datos
+              </button>
+            </div>
+            <div id="mongodb-list" class="space-y-4">
+              <p class="text-on-surface-variant">Cargando bases de datos...</p>
+            </div>
+          </div>
+
+          <!-- Diálogo de provisionado (reutilizando componentes del dashboard) -->
+          <dialog id="provision-mongo-dialog" class="bg-surface-container text-on-surface rounded-xl p-6 w-full max-w-md border border-outline-variant/30">
+            <form id="provision-mongo-form" class="space-y-4">
+              <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-primary">Provisionar MongoDB</h2>
+                <button type="button" data-close-dialog class="text-on-surface-variant">×</button>
+              </div>
+              <label class="block">
+                <span class="text-on-surface-variant">Nombre de la base de datos</span>
+                <input id="mongo-db-name" type="text" placeholder="my-database" class="mt-1 block w-full rounded bg-surface-container-high border-outline-variant" required pattern="[a-z][a-z0-9_-]{2,62}" />
+              </label>
+              <label class="block">
+                <span class="text-on-surface-variant">API Key de MongoDB</span>
+                <input id="mongo-api-key" type="password" placeholder="X-API-Key" class="mt-1 block w-full rounded bg-surface-container-high border-outline-variant" autocomplete="off" required />
+              </label>
+              <p id="provision-mongo-message" class="hidden text-error" role="alert"></p>
+              <button id="provision-mongo-submit" type="submit" class="w-full bg-primary-container text-on-primary-container py-2 rounded-lg font-label-xs uppercase tracking-widest">Crear base de datos</button>
+            </form>
+          </dialog>
+
+          <!-- Diálogo de credenciales -->
+          <dialog id="mongo-credentials-dialog" class="bg-surface-container text-on-surface rounded-xl p-6 w-full max-w-md border border-outline-variant/30">
+            <div class="space-y-3">
+              <h2 class="text-xl font-bold text-primary">Credenciales de MongoDB</h2>
+              <p class="text-on-surface-variant text-sm">Esta información no se mostrará nuevamente. Guárdela en un lugar seguro.</p>
+              <pre id="mongo-credentials-content" class="p-3 rounded bg-surface-container-high text-xs whitespace-pre-wrap"></pre>
+              <div class="flex justify-end space-x-3">
+                <button id="mongo-copy-credentials" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-md font-label-xs uppercase tracking-widest">Copiar</button>
+                <button data-close-dialog class="w-full py-2 text-on-surface-variant">Cerrar</button>
+              </div>
+            </div>
+          </dialog>
+        </section>
+      </div>
+    </main>
+
+    <script src="/js/mongodbx.js" type="module"></script>
+  </body>
+</html>
