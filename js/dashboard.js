@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const showMessage = (text) => { message.textContent = text; message.classList.remove('hidden'); };
   const redirectLogin = () => { window.location.href = '/views/login.html'; };
   const engineName = (engine) => ({ mysql: 'MySQL', postgresql: 'PostgreSQL', mongodb: 'MongoDB', sqlserver: 'SQL Server' }[engine] || engine);
+  const syncApiKeyField = () => {
+    if (apiKeyInput) {
+      // Show API key field only for MongoDB engine
+      if (engineSelect.value === 'mongodb') {
+        apiKeyInput.closest('.block').classList.remove('hidden');
+      } else {
+        apiKeyInput.closest('.block').classList.add('hidden');
+        apiKeyInput.value = '';
+        clearPublicApiKey();
+      }
+    }
+  };
 
   const parseApiResponse = async (response) => {
     const body = await response.json().catch(() => null);
@@ -211,6 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dialog === credentialsDialog) { credentialsContent.textContent = ''; clearCredentials(); }
   }));
   engineSelect.addEventListener('change', syncApiKeyField);
+  // Initialize API key field visibility based on selected engine
+  syncApiKeyField();
   document.getElementById('provision-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const formMessage = document.getElementById('provision-message');
@@ -249,26 +263,63 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally { setProvisioning(false); }
   });
   list.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-delete-id]');
-    if (!button || !window.confirm('¿Eliminar esta base de datos y todos sus datos? Esta acción no se puede deshacer.')) return;
-    const engine = button.dataset.engine;
-    const deleteId = button.dataset.deleteId;
-    button.disabled = true;
-    button.textContent = 'Eliminando…';
-    try {
-      if (engine === 'mongodb') {
-        const apiKey = restorePublicApiKey();
-        if (!apiKey) throw new Error('Para eliminar una base MongoDB ingresa primero la API key en el formulario de creación.');
-        await publicApi(`/databases/${deleteId}`, { method: 'DELETE', headers: { 'X-API-Key': apiKey } });
-      } else {
-        await api(`/api/managed-databases/${deleteId}`, { method: 'DELETE' });
+    // Handle delete button
+    const deleteButton = event.target.closest('[data-delete-id]');
+    if (deleteButton) {
+      if (!deleteButton || !window.confirm('¿Eliminar esta base de datos y todos sus datos? Esta acción no se puede deshacer.')) return;
+      const engine = deleteButton.dataset.engine;
+      const deleteId = deleteButton.dataset.deleteId;
+      deleteButton.disabled = true;
+      deleteButton.textContent = 'Eliminando…';
+      try {
+        if (engine === 'mongodb') {
+          const apiKey = restorePublicApiKey();
+          if (!apiKey) throw new Error('Para eliminar una base MongoDB ingresa primero la API key en el formulario de creación.');
+          await publicApi(`/databases/${deleteId}`, { method: 'DELETE', headers: { 'X-API-Key': apiKey } });
+        } else {
+          await api(`/api/managed-databases/${deleteId}`, { method: 'DELETE' });
+        }
+        await load();
+        showMessage('La base de datos fue eliminada y liberó capacidad para crear otra.');
+      } catch (error) {
+        deleteButton.disabled = false;
+        deleteButton.textContent = 'Eliminar';
+        showMessage(error.message);
       }
-      await load();
-      showMessage('La base de datos fue eliminada y liberó capacidad para crear otra.');
-    } catch (error) {
-      button.disabled = false;
-      button.textContent = 'Eliminar';
-      showMessage(error.message);
+      return;
+    }
+
+    // Handle rotate credentials button
+    const rotateButton = event.target.closest('[data-rotate-id]');
+    if (rotateButton) {
+      if (!rotateButton) return;
+      const engine = rotateButton.dataset.engine;
+      const rotateId = rotateButton.dataset.rotateId;
+      rotateButton.disabled = true;
+      rotateButton.textContent = 'Rotando…';
+      try {
+        if (engine === 'mongodb') {
+          const apiKey = restorePublicApiKey();
+          if (!apiKey) throw new Error('Para rotar credenciales de una base MongoDB ingresa primero la API key en el formulario de creación.');
+          const result = await publicApi(`/databases/${rotateId}/credentials/reset`, {
+            method: 'POST',
+            headers: { 'X-API-Key': apiKey }
+          });
+          const credentials = formatCredentials(result);
+          saveCredentials(credentials);
+          showCredentials(credentials);
+        } else {
+          throw new Error('La rotación de credenciales solo está disponible para bases de datos MongoDB.');
+        }
+      } catch (error) {
+        rotateButton.disabled = false;
+        rotateButton.textContent = 'Rotar credenciales';
+        showMessage(error.message);
+      } finally {
+        rotateButton.disabled = false;
+        rotateButton.textContent = 'Rotar credenciales';
+      }
+      return;
     }
   });
   document.getElementById('copy-credentials').addEventListener('click', async () => { await navigator.clipboard.writeText(credentialsContent.textContent); });
