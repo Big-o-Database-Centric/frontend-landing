@@ -14,8 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const openProvision = document.getElementById('open-provision-dialog');
   const limitMessage = document.getElementById('database-limit');
   const apiKeyInput = document.getElementById('api-key');
+  const adminApiKeyInput = document.getElementById('admin-api-key');
+  const statsDialog = document.getElementById('stats-dialog');
+  const statsContent = document.getElementById('stats-content');
   const credentialStorageKey = 'big-o:managed-database-credentials';
   const publicApiKeyStorageKey = 'big-o:mongodb-api-key';
+  const adminApiKeyStorageKey = 'big-o:mongodb-admin-api-key';
   const credentialLifetimeMs = 10 * 60 * 1000;
 
   const showMessage = (text) => { message.textContent = text; message.classList.remove('hidden'); };
@@ -75,9 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const state = database.State || 'active';
       const usage = database.QuotaBytes ? `${(database.QuotaBytes / 1024 / 1024).toFixed(0)} MB limit` : 'Quota unavailable';
       const canDelete = ['active', 'failed'].includes(state);
+      const canRotate = engine === 'mongodb' && state === 'active';
       const id = database.DatabaseId || database.id || database._id || '';
       const engine = database.Engine || database.engine || 'mongodb';
-      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}</div></div>`;
+      row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}${canRotate ? `<button type="button" data-rotate-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-primary-fixed-dim hover:bg-primary-container/10">Rotar credenciales</button>` : ''}</div></div>`;
       row.querySelector('h3').textContent = `${database.DatabaseName || database.database || 'Database'} · ${engineName(engine)}`;
       row.querySelector('.connection').textContent = database.HostName ? `${database.HostName}:${database.Port} · ${database.DatabaseUser}` : state === 'deleting' ? 'Eliminando conexión…' : 'Provisioning connection…';
       return row;
@@ -121,6 +126,46 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!saved || !saved.content || saved.expiresAt < Date.now()) { clearCredentials(); return; }
       showCredentials(saved.content);
     } catch { clearCredentials(); }
+  };
+  const clearAdminApiKey = () => sessionStorage.removeItem(adminApiKeyStorageKey);
+  const restoreAdminApiKey = () => sessionStorage.getItem(adminApiKeyStorageKey) || '';
+  const saveAdminApiKey = (key) => sessionStorage.setItem(adminApiKeyStorageKey, key);
+  const setAdminApiKeyInput = () => {
+    if (adminApiKeyInput) adminApiKeyInput.value = restoreAdminApiKey();
+  };
+  const loadStats = async () => {
+    try {
+      const apiKey = restoreAdminApiKey();
+      if (!apiKey) {
+        statsContent.innerHTML = '<p class="text-error">Ingresa tu API key de administrador en el campo correspondiente.</p>';
+        return;
+      }
+      const stats = await publicApi('/admin/stats', {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey }
+      });
+      displayStats(stats);
+    } catch (error) {
+      statsContent.innerHTML = `<p class="text-error">Error al cargar estadísticas: ${error.message}</p>`;
+    }
+  };
+  const displayStats = (stats) => {
+    statsContent.innerHTML = `
+      <div class="space-y-2">
+        <p><strong>Total de bases de datos:</strong> ${stats.totalDatabases || 0}</p>
+        <p><strong>Bases activas:</strong> ${stats.activeDatabases || 0}</p>
+        <p><strong>Bases eliminadas:</strong> ${stats.deletedDatabases || 0}</p>
+      </div>
+      <div class="mt-4 p-3 bg-surface-container-high rounded">
+        <h3 class="font-title-sm text-primary mb-2">Por equipo</h3>
+        ${(stats.teamStats || []).map(team => `
+          <div class="space-y-1">
+            <p><strong>${team.team || 'Desconocido'}:</strong></p>
+            <p class="ml-4">Activas: ${team.activeDatabases || 0} | Eliminadas: ${team.deletedDatabases || 0} | Total: ${team.totalDatabases || 0}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
   };
   const setProvisioning = (active) => {
     const submit = document.getElementById('provision-submit');
@@ -215,6 +260,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.getElementById('copy-credentials').addEventListener('click', async () => { await navigator.clipboard.writeText(credentialsContent.textContent); });
+  const openStatsBtn = document.getElementById('open-stats-dialog');
+  if (openStatsBtn) {
+    openStatsBtn.addEventListener('click', async () => {
+      statsDialog.showModal();
+      await loadStats();
+    });
+  }
+  document.getElementById('admin-api-key').addEventListener('change', (e) => {
+    const apiKey = e.target.value.trim();
+    if (apiKey) {
+      saveAdminApiKey(apiKey);
+    } else {
+      clearAdminApiKey();
+    }
+  });
+  document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const dialog = button.closest('dialog');
+      dialog.close();
+      if (dialog === credentialsDialog) {
+        credentialsContent.textContent = '';
+        clearCredentials();
+      } else if (dialog === statsDialog) {
+        statsContent.innerHTML = '<p class="text-on-surface-variant">Cargando...</p>';
+      }
+    });
+  });
   document.querySelectorAll('[data-nav="logout"]').forEach((button) => button.addEventListener('click', async () => { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined); redirectLogin(); }));
+  // Initialize admin API key input on load
+  setAdminApiKeyInput();
   load();
 });
