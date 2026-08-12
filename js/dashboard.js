@@ -26,15 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const redirectLogin = () => { window.location.href = '/views/login.html'; };
   const engineName = (engine) => ({ mysql: 'MySQL', postgresql: 'PostgreSQL', mongodb: 'MongoDB', sqlserver: 'SQL Server' }[engine] || engine);
   const syncApiKeyField = () => {
-    if (apiKeyInput) {
-      // Show API key field only for MongoDB engine
-      if (engineSelect.value === 'mongodb') {
-        apiKeyInput.closest('.block').classList.remove('hidden');
-      } else {
-        apiKeyInput.closest('.block').classList.add('hidden');
-        apiKeyInput.value = '';
-        clearPublicApiKey();
-      }
+    const isMongoDb = engineSelect.value === 'mongodb';
+    apiKeyInput.closest('label').classList.toggle('hidden', !isMongoDb);
+    apiKeyInput.disabled = !isMongoDb;
+    apiKeyInput.required = isMongoDb;
+    document.getElementById('database-name').pattern = isMongoDb
+      ? '[a-z][a-z0-9_-]{2,62}'
+      : '[a-z][a-z0-9_]{2,62}';
+
+    // Clear API key value and stored key when switching away from MongoDB
+    if (!isMongoDb) {
+      apiKeyInput.value = '';
+      clearPublicApiKey();
     }
   };
 
@@ -90,10 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
       row.className = 'glass p-container-margin rounded-xl';
       const state = database.State || 'active';
       const usage = database.QuotaBytes ? `${(database.QuotaBytes / 1024 / 1024).toFixed(0)} MB limit` : 'Quota unavailable';
-      const canDelete = ['active', 'failed'].includes(state);
-      const canRotate = engine === 'mongodb' && state === 'active';
       const id = database.DatabaseId || database.id || database._id || '';
       const engine = database.Engine || database.engine || 'mongodb';
+      const canDelete = ['active', 'failed'].includes(state);
+      const canRotate = engine === 'mongodb' && state === 'active';
       row.innerHTML = `<div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><div class="flex gap-2 items-center"><h3 class="font-title-sm text-primary"></h3><span class="text-xs text-on-surface-variant">${state}</span></div><p class="connection font-code-sm text-on-surface-variant"></p></div><div class="flex items-end gap-4 md:items-center"><div class="text-right"><p class="text-xs text-on-surface-variant">Storage</p><p class="font-code-sm">${usage}</p></div>${canDelete ? `<button type="button" data-delete-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container/10">Eliminar</button>` : ''}${canRotate ? `<button type="button" data-rotate-id="${id}" data-engine="${engine}" class="px-3 py-2 rounded-lg text-sm text-primary-fixed-dim hover:bg-primary-container/10">Rotar credenciales</button>` : ''}</div></div>`;
       row.querySelector('h3').textContent = `${database.DatabaseName || database.database || 'Database'} · ${engineName(engine)}`;
       row.querySelector('.connection').textContent = database.HostName ? `${database.HostName}:${database.Port} · ${database.DatabaseUser}` : state === 'deleting' ? 'Eliminando conexión…' : 'Provisioning connection…';
@@ -109,16 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return option;
     }));
     syncApiKeyField();
-  };
-
-  const syncApiKeyField = () => {
-    const isMongoDb = engineSelect.value === 'mongodb';
-    apiKeyInput.closest('label').classList.toggle('hidden', !isMongoDb);
-    apiKeyInput.disabled = !isMongoDb;
-    apiKeyInput.required = isMongoDb;
-    document.getElementById('database-name').pattern = isMongoDb
-      ? '[a-z][a-z0-9_-]{2,62}'
-      : '[a-z][a-z0-9_]{2,62}';
   };
 
   const formatCredentials = (result) => {
