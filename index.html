@@ -80,8 +80,8 @@
           <h1
             class="font-display-lg text-display-lg md:text-[64px] md:leading-[1.1] text-primary-container mb-6 max-w-4xl mx-auto mt-8"
           >
-            Manage your databases in question of seconds,
-            <span class="text-primary">in one place</span>
+            Manage your development services in question of seconds,
+            <span class="text-primary">in one single place</span>
           </h1>
           <p
             class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mb-10"
@@ -101,6 +101,7 @@
               <span class="material-symbols-outlined">terminal</span>
             </button>
             <button
+              data-nav="documentation"
               class="w-full sm:w-auto px-8 py-4 bg-surface-container-high border border-outline-variant text-primary font-title-sm text-title-sm font-bold rounded-xl hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2"
             >
               View Documentation
@@ -174,9 +175,9 @@
         </div>
       </section>
 
-      <!-- Database engine highlights: four glass cards (MySQL / PostgreSQL / SQL Server / MongoDB) -->
+      <!-- Brief Features Section -->
       <section class="py-24 px-container-margin max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
           <!-- MySQL Card -->
           <div
             class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
@@ -197,15 +198,13 @@
             <h3 class="font-headline-md text-headline-md text-primary mb-2">
               MySQL
             </h3>
-            <p
-              class="font-display-lg text-[28px] text-primary-container font-bold"
-            >
-              12.4k+
+            <p class="font-title-sm text-title-sm text-primary-container">
+              Reliable relational data for scale
             </p>
             <p
               class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
             >
-              Databases
+              Database Service
             </p>
           </div>
           <!-- PostgreSQL Card -->
@@ -228,46 +227,13 @@
             <h3 class="font-headline-md text-headline-md text-primary mb-2">
               PostgreSQL
             </h3>
-            <p
-              class="font-display-lg text-[28px] text-primary-container font-bold"
-            >
-              8.9k+
+            <p class="font-title-sm text-title-sm text-primary-container">
+              Advanced open-source power
             </p>
             <p
               class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
             >
-              Databases
-            </p>
-          </div>
-          <!-- SQL Server Card -->
-          <div
-            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
-          >
-            <div class="absolute top-0 right-0 p-2 opacity-5">
-              <span class="material-symbols-outlined text-[120px] rotate-12"
-                >database</span
-              >
-            </div>
-            <div
-              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
-            >
-              <span
-                class="material-symbols-outlined text-primary-container text-[28px]"
-                >table_chart</span
-              >
-            </div>
-            <h3 class="font-headline-md text-headline-md text-primary mb-2">
-              SQL Server
-            </h3>
-            <p
-              class="font-display-lg text-[28px] text-primary-container font-bold"
-            >
-              5.2k+
-            </p>
-            <p
-              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
-            >
-              Databases
+              Database Service
             </p>
           </div>
           <!-- MongoDB Card -->
@@ -290,15 +256,100 @@
             <h3 class="font-headline-md text-headline-md text-primary mb-2">
               MongoDB
             </h3>
-            <p
-              class="font-display-lg text-[28px] text-primary-container font-bold"
-            >
-              7.1k+
+            <p class="font-title-sm text-title-sm text-primary-container">
+              Flexible document-based agility
             </p>
             <p
               class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
             >
-              Databases
+              Database Service
+            </p>
+          </div>
+          <!-- n8n Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >account_tree</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >hub</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              n8n
+            </h3>
+            <p class="font-title-sm text-title-sm text-primary-container">
+              Automate complex workflows easily
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              Automation Service
+            </p>
+          </div>
+          <!-- AI Chatbot Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >smart_toy</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >forum</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              AI Chatbot
+            </h3>
+            <p class="font-title-sm text-title-sm text-primary-container">
+              Intelligent customer engagement
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              AI Service
+            </p>
+          </div>
+          <!-- DNS Card -->
+          <div
+            class="glass-panel p-stack-lg rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all group relative overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 p-2 opacity-5">
+              <span class="material-symbols-outlined text-[120px] rotate-12"
+                >public</span
+              >
+            </div>
+            <div
+              class="w-12 h-12 flex items-center justify-center rounded-lg bg-primary-container/10 mb-6 group-hover:bg-primary-container/20 transition-all border border-primary-container/20"
+            >
+              <span
+                class="material-symbols-outlined text-primary-container text-[28px]"
+                >language</span
+              >
+            </div>
+            <h3 class="font-headline-md text-headline-md text-primary mb-2">
+              DNS
+            </h3>
+            <p class="font-title-sm text-title-sm text-primary-container">
+              High-performance global resolution
+            </p>
+            <p
+              class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant mt-2"
+            >
+              NETWORK SERVICE
             </p>
           </div>
         </div>
@@ -324,7 +375,7 @@
         >
           <div class="text-center">
             <div class="font-display-lg text-display-lg text-primary-container">
-              250M+
+              2.5k+
             </div>
             <div
               class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
@@ -334,7 +385,7 @@
           </div>
           <div class="text-center">
             <div class="font-display-lg text-display-lg text-primary-container">
-              15k+
+              1k+
             </div>
             <div
               class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant"
@@ -411,7 +462,7 @@
             BIG O Systems
           </div>
           <p class="font-body-sm text-body-sm text-on-surface-variant">
-            © 2024 BIG O Systems. All rights reserved.
+            © 2026 BIG O Systems. All rights reserved.
           </p>
         </div>
         <div class="flex gap-gutter mb-gutter md:mb-0">
@@ -456,6 +507,6 @@
         </div>
       </div>
     </footer>
-    <script src="/js/landing.js"></script>
+    <script src="./js/landing.js"></script>
   </body>
 </html>

@@ -33,5 +33,7 @@ document.addEventListener('click', (e) => {
         window.location.href = '/views/register.html';
     } else if (nav === 'login') {
         window.location.href = '/views/login.html';
+    } else if (nav === 'documentation') {
+        window.location.href = 'https://docusaurus.szapatar.dev/'
     }
 });
