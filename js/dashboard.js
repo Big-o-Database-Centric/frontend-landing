@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminApiKeyInput = document.getElementById('admin-api-key');
   const statsDialog = document.getElementById('stats-dialog');
   const statsContent = document.getElementById('stats-content');
+  const n8nDialog = document.getElementById('n8n-dialog');
+  const n8nProgress = document.getElementById('n8n-progress');
+  const n8nMessage = document.getElementById('n8n-message');
+  const n8nCredentialContainer = document.getElementById('n8n-credential-container');
+  const n8nCredentialLink = document.getElementById('n8n-credential-link');
   const credentialStorageKey = 'big-o:managed-database-credentials';
   const publicApiKeyStorageKey = 'big-o:mongodb-api-key';
   const adminApiKeyStorageKey = 'big-o:mongodb-admin-api-key';
@@ -163,6 +168,49 @@ document.addEventListener('DOMContentLoaded', () => {
       displayStats(stats);
     } catch (error) {
       statsContent.innerHTML = `<p class="text-error">Error al cargar estadísticas: ${error.message}</p>`;
+    }
+  };
+
+  const resetN8nDialog = () => {
+    n8nProgress.classList.add('hidden');
+    n8nProgress.textContent = '';
+    n8nMessage.classList.add('hidden');
+    n8nMessage.textContent = '';
+    n8nCredentialContainer.classList.add('hidden');
+    n8nCredentialLink.href = '#';
+    n8nCredentialLink.textContent = '';
+  };
+
+  const setN8nLoading = (active) => {
+    n8nProgress.classList.toggle('hidden', !active);
+    n8nProgress.textContent = active ? 'Provisionando cuenta N8N…' : '';
+  };
+
+  const showN8nError = (text) => {
+    n8nMessage.textContent = text;
+    n8nMessage.classList.remove('hidden');
+  };
+
+  const showN8nCredential = (credentialUrl) => {
+    n8nCredentialLink.href = credentialUrl;
+    n8nCredentialLink.textContent = credentialUrl;
+    n8nCredentialContainer.classList.remove('hidden');
+  };
+
+  const provisionN8n = async () => {
+    resetN8nDialog();
+    setN8nLoading(true);
+    try {
+      const result = await api('/api/n8n/provision', { method: 'POST' });
+      if (result.credential) {
+        showN8nCredential(result.credential);
+      } else {
+        showN8nError('No se recibió el enlace de invitación.');
+      }
+    } catch (error) {
+      if (error.message !== 'Unauthorized') showN8nError(error.message);
+    } finally {
+      setN8nLoading(false);
     }
   };
   const displayStats = (stats) => {
@@ -323,6 +371,18 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadStats();
     });
   }
+
+  const openN8nBtn = document.getElementById('open-n8n-dialog');
+  if (openN8nBtn) {
+    openN8nBtn.addEventListener('click', () => {
+      n8nDialog.showModal();
+      provisionN8n();
+    });
+  }
+
+  document.getElementById('copy-n8n-credential')?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(n8nCredentialLink.textContent);
+  });
   document.getElementById('admin-api-key').addEventListener('change', (e) => {
     const apiKey = e.target.value.trim();
     if (apiKey) {
@@ -340,6 +400,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearCredentials();
       } else if (dialog === statsDialog) {
         statsContent.innerHTML = '<p class="text-on-surface-variant">Cargando...</p>';
+      } else if (dialog === n8nDialog) {
+        resetN8nDialog();
       }
     });
   });
