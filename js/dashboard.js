@@ -1,7 +1,7 @@
 let engines = [];
 let maxPerUser = 3;
-const DEFAULT_ENGINES = ['mysql', 'postgresql'];
-const MONGO_PROVISION_API_BASE = '';
+const DEFAULT_ENGINES = ['mysql', 'postgresql', 'mongodb'];
+const MONGO_PROVISION_API_BASE = 'https://mongo.szapatar.dev';
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -276,11 +276,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const apiKey = document.getElementById('api-key').value.trim();
       let result;
 
-      result = await api('/api/managed-databases', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ engine: engineSelect.value, databaseName })
-      });
+      if (engineSelect.value === 'mongodb') {
+        if (!apiKey) throw new Error('API key is required to provision a MongoDB database.');
+        result = await publicApi('/databases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          body: JSON.stringify({ databaseName })
+        });
+        savePublicApiKey(apiKey);
+      } else {
+        result = await api('/api/managed-databases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ engine: engineSelect.value, databaseName })
+        });
+      }
 
       const credentials = formatCredentials(result);
       saveCredentials(credentials);
