@@ -51,7 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = await response.json().catch(() => null);
     if (!response.ok) {
       const errorMessage = body?.error?.message || body?.message || `${response.status} ${response.statusText}`;
-      throw new Error(errorMessage);
+      throw Object.assign(new Error(errorMessage), {
+        status: response.status,
+        code: body?.error?.code || body?.code,
+      });
     }
     return body;
   };
@@ -192,6 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
     n8nMessage.classList.remove('hidden');
   };
 
+  const n8nErrorMessage = (error) => {
+    const details = `${error.code || ''} ${error.message || ''}`.toLowerCase();
+    const accountExists = error.code === 'N8N_ACCOUNT_EXISTS'
+      || (error.status === 500 && /(already|exist|ya tiene|cuenta existente)/.test(details) && /(account|cuenta|n8n)/.test(details));
+    return accountExists
+      ? 'Ya tienes una cuenta N8N.'
+      : 'No fue posible provisionar tu cuenta N8N. Intenta de nuevo.';
+  };
+
   const showN8nCredential = (credentialUrl) => {
     n8nCredentialLink.href = credentialUrl;
     n8nCredentialLink.textContent = credentialUrl;
@@ -209,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showN8nError('No se recibió el enlace de invitación.');
       }
     } catch (error) {
-      if (error.message !== 'Unauthorized') showN8nError(error.message);
+      if (error.message !== 'Unauthorized') showN8nError(n8nErrorMessage(error));
     } finally {
       setN8nLoading(false);
     }
