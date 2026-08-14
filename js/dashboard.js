@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const n8nCredentialLink = document.getElementById('n8n-credential-link');
   const credentialStorageKey = 'big-o:managed-database-credentials';
   const publicApiKeyStorageKey = 'big-o:mongodb-api-key';
+  const userApiKeyStorageKey = 'big-o:user-mongodb-api-key';
   const adminApiKeyStorageKey = 'big-o:mongodb-admin-api-key';
   const credentialLifetimeMs = 10 * 60 * 1000;
 
