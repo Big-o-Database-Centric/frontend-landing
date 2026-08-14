@@ -30,10 +30,10 @@
           <span id="user-name" class="font-body-sm text-on-surface">Cargando…</span>
           <span id="user-email" class="text-[10px] text-on-surface-variant"></span>
         </div>
-        <a href="/views/n8n.html" class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-primary-fixed-dim hover:bg-primary-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim">
+        <button data-open-n8n-dialog type="button" class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-primary-fixed-dim hover:bg-primary-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim">
           <span class="material-symbols-outlined" aria-hidden="true">account_tree</span>
           <span class="font-label-xs uppercase tracking-widest">Cuenta N8N</span>
-        </a>
+        </button>
         <button data-nav="logout" class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-error hover:bg-error-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-error">
           <span class="material-symbols-outlined" aria-hidden="true">logout</span>
           <span class="font-label-xs uppercase tracking-widest">Cerrar sesión</span>
@@ -47,7 +47,7 @@
         <nav class="flex items-center gap-4 font-label-xs uppercase tracking-widest" aria-label="Navegación móvil">
           <a class="text-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/dashboard.html">Overview</a>
           <a class="text-primary-fixed-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/ai.html" aria-current="page">IA</a>
-          <a class="text-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim" href="/views/dashboard.html">N8N</a>
+           <button data-open-n8n-dialog type="button" class="text-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-fixed-dim">Cuenta N8N</button>
         </nav>
         <button data-nav="logout" type="button" class="rounded-lg p-2 text-error hover:bg-error-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-error" aria-label="Cerrar sesión"><span class="material-symbols-outlined" aria-hidden="true">logout</span></button>
       </div>
@@ -107,7 +107,8 @@
           </div>
         </section>
       </div>
-    </main>
-    <script type="module" src="/js/ai.js"></script>
+     </main>
+     <dialog id="n8n-dialog" class="bg-surface-container text-on-surface rounded-xl p-6 w-full max-w-md border border-outline-variant/30"><div class="space-y-4"><h2 class="text-xl font-bold text-primary">Tu cuenta N8N</h2><p class="text-on-surface-variant text-sm">Haz clic en el enlace para completar tu registro en N8N. El enlace es de un solo uso.</p><p id="n8n-progress" class="hidden text-primary-fixed-dim" role="status"></p><p id="n8n-message" class="hidden text-error" role="alert"></p><div id="n8n-credential-container" class="hidden"><a id="n8n-credential-link" href="#" target="_blank" rel="noopener noreferrer" class="block p-3 rounded bg-surface-container-high text-primary-fixed-dim break-all hover:underline"></a><button id="copy-n8n-credential" type="button" class="w-full mt-3 bg-primary-container text-on-primary-container py-2 rounded-lg">Copiar enlace</button></div><button data-close-dialog type="button" class="w-full py-2 text-on-surface-variant">Cerrar</button></div></dialog>
+     <script type="module" src="/js/ai.js"></script>
   </body>
 </html>

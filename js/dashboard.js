@@ -385,13 +385,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const openN8nBtn = document.getElementById('open-n8n-dialog');
-  if (openN8nBtn) {
+  document.querySelectorAll('[data-open-n8n-dialog]').forEach((openN8nBtn) => {
     openN8nBtn.addEventListener('click', () => {
       n8nDialog.showModal();
       provisionN8n();
     });
-  }
+  });
 
   document.getElementById('copy-n8n-credential')?.addEventListener('click', async () => {
     await navigator.clipboard.writeText(n8nCredentialLink.textContent);

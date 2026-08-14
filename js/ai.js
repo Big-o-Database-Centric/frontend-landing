@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorRegion = document.getElementById('ai-error');
   const modelLabel = document.getElementById('ai-model');
   const remainingLabel = document.getElementById('ai-remaining');
+  const n8nDialog = document.getElementById('n8n-dialog');
+  const n8nProgress = document.getElementById('n8n-progress');
+  const n8nMessage = document.getElementById('n8n-message');
+  const n8nCredentialContainer = document.getElementById('n8n-credential-container');
+  const n8nCredentialLink = document.getElementById('n8n-credential-link');
   let dailyLimit = 0;
   let busy = false;
   let conversationVersion = 0;
@@ -22,7 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
       redirectLogin();
       throw Object.assign(new Error('Unauthorized'), { status: 401 });
     }
-    if (!response.ok) throw Object.assign(new Error('Request failed'), { status: response.status });
+    if (!response.ok) {
+      throw Object.assign(new Error(body?.error?.message || body?.message || `${response.status} ${response.statusText}`), {
+        status: response.status,
+        code: body?.error?.code || body?.code,
+      });
+    }
     return body;
   };
 
@@ -102,6 +112,53 @@ document.addEventListener('DOMContentLoaded', () => {
     form.setAttribute('aria-busy', String(active));
   };
 
+  const resetN8nDialog = () => {
+    n8nProgress.classList.add('hidden');
+    n8nProgress.textContent = '';
+    n8nMessage.classList.add('hidden');
+    n8nMessage.textContent = '';
+    n8nCredentialContainer.classList.add('hidden');
+    n8nCredentialLink.href = '#';
+    n8nCredentialLink.textContent = '';
+  };
+
+  const setN8nLoading = (active) => {
+    n8nProgress.classList.toggle('hidden', !active);
+    n8nProgress.textContent = active ? 'Provisionando cuenta N8N…' : '';
+  };
+
+  const n8nErrorMessage = (error) => {
+    const details = `${error.code || ''} ${error.message || ''}`.toLowerCase();
+    const accountExists = error.code === 'N8N_ACCOUNT_EXISTS'
+      || (error.status === 500 && /(already|exist|ya tiene|cuenta existente)/.test(details) && /(account|cuenta|n8n)/.test(details));
+    return accountExists
+      ? 'Ya tienes una cuenta N8N.'
+      : 'No fue posible provisionar tu cuenta N8N. Intenta de nuevo.';
+  };
+
+  const provisionN8n = async () => {
+    resetN8nDialog();
+    setN8nLoading(true);
+    try {
+      const result = await api('/api/n8n/provision', { method: 'POST' });
+      if (result.credential) {
+        n8nCredentialLink.href = result.credential;
+        n8nCredentialLink.textContent = result.credential;
+        n8nCredentialContainer.classList.remove('hidden');
+      } else {
+        n8nMessage.textContent = 'No se recibió el enlace de invitación.';
+        n8nMessage.classList.remove('hidden');
+      }
+    } catch (error) {
+      if (error.message !== 'Unauthorized') {
+        n8nMessage.textContent = n8nErrorMessage(error);
+        n8nMessage.classList.remove('hidden');
+      }
+    } finally {
+      setN8nLoading(false);
+    }
+  };
+
   const load = async () => {
     try {
       const [profile, capabilities] = await Promise.all([api('/api/me'), api('/api/ai/capabilities')]);
@@ -157,6 +214,20 @@ document.addEventListener('DOMContentLoaded', () => {
     clearError();
     input.focus();
   });
+
+  document.querySelectorAll('[data-open-n8n-dialog]').forEach((button) => button.addEventListener('click', () => {
+    n8nDialog.showModal();
+    provisionN8n();
+  }));
+
+  document.getElementById('copy-n8n-credential').addEventListener('click', async () => {
+    await navigator.clipboard.writeText(n8nCredentialLink.textContent);
+  });
+
+  n8nDialog.querySelectorAll('[data-close-dialog]').forEach((button) => button.addEventListener('click', () => {
+    n8nDialog.close();
+    resetN8nDialog();
+  }));
 
   document.querySelectorAll('[data-nav="logout"]').forEach((button) => button.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
