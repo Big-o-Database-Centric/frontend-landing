@@ -2,6 +2,7 @@ let engines = [];
 let maxPerUser = 3;
 const DEFAULT_ENGINES = ['mysql', 'postgresql', 'mongodb'];
 const MONGO_PROVISION_API_BASE = 'https://mongo.szapatar.dev';
+const MONGO_PROVISION_API_KEY = 'grupobigoadmin';
 
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('database-list');
@@ -13,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const engineSelect = document.getElementById('engine');
   const openProvision = document.getElementById('open-provision-dialog');
   const limitMessage = document.getElementById('database-limit');
-  const apiKeyInput = document.getElementById('api-key');
   const adminApiKeyInput = document.getElementById('admin-api-key');
   const statsDialog = document.getElementById('stats-dialog');
   const statsContent = document.getElementById('stats-content');
@@ -23,8 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const n8nCredentialContainer = document.getElementById('n8n-credential-container');
   const n8nCredentialLink = document.getElementById('n8n-credential-link');
   const credentialStorageKey = 'big-o:managed-database-credentials';
-  const publicApiKeyStorageKey = 'big-o:mongodb-api-key';
-  const userApiKeyStorageKey = 'big-o:user-mongodb-api-key';
   const adminApiKeyStorageKey = 'big-o:mongodb-admin-api-key';
   const credentialLifetimeMs = 10 * 60 * 1000;
 
@@ -33,18 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const engineName = (engine) => ({ mysql: 'MySQL', postgresql: 'PostgreSQL', mongodb: 'MongoDB', sqlserver: 'SQL Server' }[engine] || engine);
   const syncApiKeyField = () => {
     const isMongoDb = engineSelect.value === 'mongodb';
-    apiKeyInput.closest('label').classList.toggle('hidden', !isMongoDb);
-    apiKeyInput.disabled = !isMongoDb;
-    apiKeyInput.required = isMongoDb;
     document.getElementById('database-name').pattern = isMongoDb
       ? '[a-z][a-z0-9_-]{2,62}'
       : '[a-z][a-z0-9_]{2,62}';
-
-    // Clear API key value and stored key when switching away from MongoDB
-    if (!isMongoDb) {
-      apiKeyInput.value = '';
-      clearPublicApiKey();
-    }
   };
 
   const parseApiResponse = async (response) => {
@@ -66,8 +55,30 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const publicApi = async (path, options = {}) => {
-    const response = await fetch(`${MONGO_PROVISION_API_BASE}${path}`, options);
+    const response = await fetch(`${MONGO_PROVISION_API_BASE}${path}`, {
+      ...options,
+      headers: { 'X-API-Key': MONGO_PROVISION_API_KEY, ...(options.headers || {}) },
+    });
     return parseApiResponse(response);
+  };
+
+  const loadMongoDatabases = async () => {
+    try {
+      const result = await publicApi('/databases');
+      const databases = Array.isArray(result) ? result : result?.databases;
+      if (!Array.isArray(databases)) return [];
+      return databases.map((database) => ({
+        ...database,
+        DatabaseId: database.DatabaseId || database.id || database._id,
+        DatabaseName: database.DatabaseName || database.databaseName || database.database,
+        Engine: 'mongodb',
+        HostName: database.HostName || database.host,
+        DatabaseUser: database.DatabaseUser || database.username,
+        State: database.State || database.state || 'active',
+      }));
+    } catch {
+      return [];
+    }
   };
 
   const consumingCapacity = (database) => ['pending', 'active', 'deleting'].includes(database.State || 'active');
@@ -132,12 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return `Engine: ${engine}\nDatabase: ${database}\nUsername: ${username}\nPassword: ${password}\nConnection: ${connectionString}`;
   };
   const clearCredentials = () => sessionStorage.removeItem(credentialStorageKey);
-  const clearPublicApiKey = () => sessionStorage.removeItem(publicApiKeyStorageKey);
-  const restorePublicApiKey = () => sessionStorage.getItem(publicApiKeyStorageKey) || '';
-  const savePublicApiKey = (key) => sessionStorage.setItem(publicApiKeyStorageKey, key);
-  const setPublicApiKeyInput = () => {
-    if (apiKeyInput) apiKeyInput.value = restorePublicApiKey();
-  };
   const showCredentials = (content) => {
     credentialsContent.textContent = content;
     if (!credentialsDialog.open) credentialsDialog.showModal();
@@ -258,15 +263,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const load = async () => {
     try {
-      const [user, databases, capabilities] = await Promise.all([api('/api/me'), api('/api/managed-databases'), api('/api/managed-databases/capabilities')]);
+      const [user, databases, capabilities, mongoDatabases] = await Promise.all([
+        api('/api/me'),
+        api('/api/managed-databases'),
+        api('/api/managed-databases/capabilities'),
+        loadMongoDatabases(),
+      ]);
       document.getElementById('user-name').textContent = user.Name;
       document.getElementById('user-email').textContent = user.Email;
       engines = capabilities.engines && capabilities.engines.length > 0 ? capabilities.engines : DEFAULT_ENGINES;
       maxPerUser = capabilities.maxPerUser || 3;
       renderEngineOptions();
-      render(databases);
+      const databaseIds = new Set(databases.map((database) => database.DatabaseId || database.id || database._id));
+      render([...databases, ...mongoDatabases.filter((database) => !databaseIds.has(database.DatabaseId))]);
       restoreCredentials();
-      setPublicApiKeyInput();
     } catch (error) { if (error.message !== 'Unauthorized') showMessage(error.message); }
   };
 
@@ -286,17 +296,14 @@ document.addEventListener('DOMContentLoaded', () => {
     formMessage.classList.add('hidden');
     try {
       const databaseName = document.getElementById('database-name').value.trim();
-      const apiKey = document.getElementById('api-key').value.trim();
       let result;
 
       if (engineSelect.value === 'mongodb') {
-        if (!apiKey) throw new Error('API key is required to provision a MongoDB database.');
         result = await publicApi('/databases', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ databaseName })
         });
-        savePublicApiKey(apiKey);
       } else {
         result = await api('/api/managed-databases', {
           method: 'POST',
@@ -327,9 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deleteButton.textContent = 'Eliminando…';
       try {
         if (engine === 'mongodb') {
-          const apiKey = restorePublicApiKey();
-          if (!apiKey) throw new Error('Para eliminar una base MongoDB ingresa primero la API key en el formulario de creación.');
-          await publicApi(`/databases/${deleteId}`, { method: 'DELETE', headers: { 'X-API-Key': apiKey } });
+          await publicApi(`/databases/${deleteId}`, { method: 'DELETE' });
         } else {
           await api(`/api/managed-databases/${deleteId}`, { method: 'DELETE' });
         }
@@ -353,11 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
       rotateButton.textContent = 'Rotando…';
       try {
         if (engine === 'mongodb') {
-          const apiKey = restorePublicApiKey();
-          if (!apiKey) throw new Error('Para rotar credenciales de una base MongoDB ingresa primero la API key en el formulario de creación.');
           const result = await publicApi(`/databases/${rotateId}/credentials/reset`, {
-            method: 'POST',
-            headers: { 'X-API-Key': apiKey }
+            method: 'POST'
           });
           const credentials = formatCredentials(result);
           saveCredentials(credentials);

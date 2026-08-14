@@ -74,8 +74,6 @@ test('keeps the dashboard responsive while creating and restores new credentials
 
   await page.goto('/views/dashboard.html', { waitUntil: 'networkidle' });
   await page.locator('#open-provision-dialog').click();
-  await expect(page.locator('#api-key')).toBeHidden();
-  await expect(page.locator('#api-key')).not.toHaveAttribute('required', '');
   await page.locator('#database-name').fill('shop');
   await page.locator('#provision-submit').click();
   await expect(page.locator('#provision-progress')).toContainText('Creando MySQL');

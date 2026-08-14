@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('permite solicitar la creación de una base de datos MongoDB desde el dashboard', async ({ page }) => {
   let requestPayload: Record<string, unknown> | undefined;
+  let requestApiKey = '';
 
   await page.route('https://cdn.tailwindcss.com/**', route => route.abort());
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
@@ -22,7 +23,12 @@ test('permite solicitar la creación de una base de datos MongoDB desde el dashb
     body: '[]',
   }));
   await page.route('https://mongo.szapatar.dev/databases', async route => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      return;
+    }
     requestPayload = route.request().postDataJSON();
+    requestApiKey = route.request().headers()['x-api-key'];
     await route.fulfill({
       status: 201,
       contentType: 'application/json',
@@ -40,13 +46,12 @@ test('permite solicitar la creación de una base de datos MongoDB desde el dashb
 
   await page.getByRole('button', { name: /provision new db/i }).click();
   await page.locator('select[name="engine"]').selectOption('mongodb');
-  await expect(page.locator('input[name="apiKey"]')).toBeVisible();
-  await expect(page.locator('input[name="apiKey"]')).toHaveAttribute('required', '');
-  await page.locator('input[name="apiKey"]').fill('test-api-key');
+  await expect(page.locator('input[name="apiKey"]')).toHaveCount(0);
   await page.locator('input[name="databaseName"]').fill('analytics-db');
   await page.getByRole('button', { name: /create database/i }).click();
 
   await expect(page.locator('#credentials-dialog')).toBeVisible();
   await expect(page.locator('#credentials-content')).toContainText('db_83fd9ab2');
   expect(requestPayload).toEqual({ databaseName: 'analytics-db' });
+  expect(requestApiKey).toBe('grupobigoadmin');
 });
