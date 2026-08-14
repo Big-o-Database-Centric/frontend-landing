@@ -1,6 +1,6 @@
 let engines = [];
 let maxPerUser = 3;
-const DEFAULT_ENGINES = ['mysql', 'postgresql', 'sqlserver', 'mongodb'];
+const DEFAULT_ENGINES = ['mysql', 'postgresql', 'mongodb'];
 const MONGO_PROVISION_API_BASE = 'https://mongo.szapatar.dev';
 
 document.addEventListener('DOMContentLoaded', () => {
